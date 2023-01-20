@@ -1,20 +1,24 @@
 package io.github.winnpixie.webserver;
 
+import io.github.winnpixie.webserver.endpoints.EndpointManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 
-public class Server {
+public class HttpServer {
     private int port;
     private File rootDirectory;
     private boolean running;
+    private final EndpointManager endpointManager;
     private Thread serverThread;
 
-    public Server(int port, @NotNull File rootDirectory) {
+    public HttpServer(int port, @NotNull File rootDirectory) {
         this.port = port;
         this.rootDirectory = rootDirectory;
+
+        this.endpointManager = new EndpointManager();
     }
 
     public int getPort() {
@@ -39,11 +43,22 @@ public class Server {
         return running;
     }
 
-    public void setRunning(boolean running) {
-        this.running = running;
+    @NotNull
+    public EndpointManager getEndpointManager() {
+        return endpointManager;
     }
 
-    public void startThread() {
+    public void start() {
+        this.running = true;
+
+        startThread();
+    }
+
+    public void stop() {
+        this.running = false;
+    }
+
+    private void startThread() {
         this.serverThread = new Thread(() -> {
             try (var srvSocket = new ServerSocket(port)) {
                 System.out.printf("JWS started on %s:%d\n", srvSocket.getInetAddress().getHostName(), srvSocket.getLocalPort());

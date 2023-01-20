@@ -50,6 +50,22 @@ public class Request {
     }
 
     @NotNull
+    public String getQuery(@NotNull String key, boolean exact) {
+        String[] entries = this.query.split("&");
+
+        for (String entry : entries) {
+            String[] pair = entry.split("=", 2);
+
+            if (!pair[0].equals(key) && exact) continue;
+            if (!pair[0].equalsIgnoreCase(key)) continue;
+
+            return pair.length > 1 ? pair[1] : "";
+        }
+
+        return "";
+    }
+
+    @NotNull
     public String getProtocol() {
         return protocol;
     }
@@ -60,8 +76,8 @@ public class Request {
     }
 
     @NotNull
-    public String getHeader(@NotNull String name, boolean caseSensitive) {
-        if (caseSensitive) return headers.getOrDefault(name, "");
+    public String getHeader(@NotNull String name, boolean exact) {
+        if (exact) return headers.getOrDefault(name, "");
 
         for (var entry : headers.entrySet()) {
             if (!entry.getKey().equalsIgnoreCase(name)) continue;
@@ -84,10 +100,16 @@ public class Request {
         var httpHeader = reader.readLine().split(" ");
         this.method = httpHeader[0];
         this.path = httpHeader[1];
-        if (this.path.contains("?")) {
-            this.query = path.substring(this.path.indexOf('?') + 1);
-            this.path = path.substring(0, this.path.indexOf('?'));
+
+        int queryIdx = path.indexOf('?');
+        if (queryIdx > 0) { // Query can not be the first character in path.
+            if (queryIdx != path.length() - 1) {
+                this.query = path.substring(queryIdx + 1);
+            }
+
+            this.path = path.substring(0, queryIdx);
         }
+
         this.protocol = httpHeader[2];
 
         this.headers = new HashMap<>();
@@ -97,7 +119,7 @@ public class Request {
             headers.put(header[0], header[1].startsWith(" ") ? header[1].substring(1) : header[1]);
         }
 
-        // TODO: Add reading body
+        // TODO: Add properly? reading request body, this seems to work *for now*
         var contentLengthHeader = getHeader("Content-Length", false);
         if (contentLengthHeader.isEmpty()) return;
 
@@ -111,7 +133,6 @@ public class Request {
                 contentLength--;
             }
 
-            baos.flush();
             this.body = baos.toByteArray();
         }
     }
