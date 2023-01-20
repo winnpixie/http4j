@@ -15,8 +15,8 @@ public class DefaultEndpoint extends Endpoint {
             if (file.isDirectory()) file = new File(file, "index.html");
 
             if (!file.isDirectory() && request.getPath().endsWith("/")) {
-                response.setCode(404);
-                response.setCodeInfo("Not Found");
+                response.setStatusCode(404);
+                response.setReasonPhrase("Not Found");
                 return;
             }
 
@@ -27,8 +27,8 @@ public class DefaultEndpoint extends Endpoint {
                         System.out.println("Prevented read from file outside of server root directory");
                     }
 
-                    response.setCode(404);
-                    response.setCodeInfo("Not Found");
+                    response.setStatusCode(404);
+                    response.setReasonPhrase("Not Found");
                 } else {
                     try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                         int ch;
@@ -37,8 +37,8 @@ public class DefaultEndpoint extends Endpoint {
                         }
                     }
 
-                    response.setCode(200);
-                    response.setCodeInfo("OK");
+                    response.setStatusCode(200);
+                    response.setReasonPhrase("OK");
                 }
             } catch (IOException e) {
                 e.printStackTrace();

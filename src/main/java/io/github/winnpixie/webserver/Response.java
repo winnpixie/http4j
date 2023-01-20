@@ -13,8 +13,8 @@ public class Response {
     private final ByteArrayOutputStream body;
     private final Map<String, String> headers;
 
-    private int code;
-    private String codeInfo;
+    private int statusCode;
+    private String reasonPhrase;
 
     public Response(@NotNull Request request) {
         this.request = request;
@@ -23,8 +23,8 @@ public class Response {
         this.headers.put("Connection", "close");
 
         this.body = new ByteArrayOutputStream();
-        this.code = 500;
-        this.codeInfo = "Internal Server Error";
+        this.statusCode = 500;
+        this.reasonPhrase = "Internal Server Error";
     }
 
     @NotNull
@@ -46,28 +46,28 @@ public class Response {
         headers.put(key, value);
     }
 
-    public int getCode() {
-        return code;
+    public int getStatusCode() {
+        return statusCode;
     }
 
-    public void setCode(int code) {
-        this.code = code;
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
     }
 
     @NotNull
-    public String getCodeInfo() {
-        return codeInfo;
+    public String getReasonPhrase() {
+        return reasonPhrase;
     }
 
-    public void setCodeInfo(@NotNull String codeInfo) {
-        this.codeInfo = codeInfo;
+    public void setReasonPhrase(@NotNull String reasonPhrase) {
+        this.reasonPhrase = reasonPhrase;
     }
 
     public void write() throws Exception {
         var os = request.getRequestThread().getSocketHandler().getOutputStream();
         if (os == null) throw new RuntimeException("No output stream to write to!");
 
-        os.write("HTTP/1.0 %d %s\n".formatted(code, codeInfo).getBytes(StandardCharsets.UTF_8));
+        os.write("HTTP/1.0 %d %s\n".formatted(statusCode, reasonPhrase).getBytes(StandardCharsets.UTF_8));
 
         headers.forEach((key, value) -> {
             try {

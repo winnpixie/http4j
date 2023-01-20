@@ -31,15 +31,15 @@ public class RequestThread extends Thread {
 
             Response response = new Response(request);
             if (request.getHeader("Host", false).isEmpty() || !request.getPath().startsWith("/")) {
-                response.setCode(400);
-                response.setCodeInfo("Bad Request");
+                response.setStatusCode(400);
+                response.setReasonPhrase("Bad Request");
             } else {
                 server.getEndpointManager().getEndpoint(request.getPath()).getHandler().accept(response);
             }
             response.write();
 
             System.out.printf("%s '%s' (%d) [%s]\n", sock.getInetAddress(), request.getPath(),
-                    response.getCode(), request.getHeader("User-Agent", false));
+                    response.getStatusCode(), request.getHeader("User-Agent", false));
         } catch (Exception e) {
             e.printStackTrace();
         }
