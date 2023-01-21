@@ -34,7 +34,7 @@ public class DefaultEndpoint extends Endpoint {
                         byte[] buffer = new byte[8192];
                         var read = -1;
                         while ((read = fileStream.read(buffer)) != -1) {
-                            body.write(read);
+                            body.write(buffer, 0, read);
                         }
                     }
 
