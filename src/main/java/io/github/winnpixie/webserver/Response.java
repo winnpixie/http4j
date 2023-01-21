@@ -10,21 +10,18 @@ import java.util.Map;
 
 public class Response {
     private final Request request;
-    private final ByteArrayOutputStream body;
-    private final Map<String, String> headers;
+    private final ByteArrayOutputStream body = new ByteArrayOutputStream();
+    private final Map<String, String> headers = new HashMap<>() {
+        {
+            put("Connection", "close");
+        }
+    };
 
-    private int statusCode;
-    private String reasonPhrase;
+    private int statusCode = 500;
+    private String reasonPhrase = "Internal Server Error";
 
     public Response(@NotNull Request request) {
         this.request = request;
-
-        this.headers = new HashMap<>();
-        this.headers.put("Connection", "close");
-
-        this.body = new ByteArrayOutputStream();
-        this.statusCode = 500;
-        this.reasonPhrase = "Internal Server Error";
     }
 
     @NotNull
@@ -65,7 +62,7 @@ public class Response {
 
     public void write() throws Exception {
         var os = request.getRequestThread().getSocketHandler().getOutputStream();
-        if (os == null) throw new RuntimeException("No output stream to write to!");
+        if (os == null) throw new RuntimeException("No output stream to write to.");
 
         os.write("HTTP/1.0 %d %s\n".formatted(statusCode, reasonPhrase).getBytes(StandardCharsets.UTF_8));
 
@@ -78,6 +75,7 @@ public class Response {
         });
 
         os.write("\n".getBytes(StandardCharsets.UTF_8));
+
         os.write(body.toByteArray());
     }
 }

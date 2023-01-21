@@ -51,10 +51,10 @@ public class Request {
 
     @NotNull
     public String getQuery(@NotNull String key, boolean exact) {
-        String[] entries = this.query.split("&");
+        var entries = this.query.split("&");
 
-        for (String entry : entries) {
-            String[] pair = entry.split("=", 2);
+        for (var entry : entries) {
+            var pair = entry.split("=", 2);
 
             if (!pair[0].equals(key) && exact) continue;
             if (!pair[0].equalsIgnoreCase(key)) continue;
@@ -63,6 +63,19 @@ public class Request {
         }
 
         return "";
+    }
+
+    @NotNull
+    public Map<String, String> getQueries() {
+        var queries = new HashMap<String, String>();
+        String[] entries = this.query.split("&");
+
+        for (String entry : entries) {
+            String[] pair = entry.split("=", 2);
+            queries.put(pair[0], pair.length > 1 ? pair[1] : "");
+        }
+
+        return queries;
     }
 
     @NotNull
@@ -103,20 +116,17 @@ public class Request {
 
         int queryIdx = path.indexOf('?');
         if (queryIdx > 0) { // Query can not be the first character in path.
-            if (queryIdx != path.length() - 1) {
-                this.query = path.substring(queryIdx + 1);
-            }
-
+            this.query = path.substring(queryIdx + 1);
             this.path = path.substring(0, queryIdx);
         }
 
         this.protocol = httpHeader[2];
 
         this.headers = new HashMap<>();
-        String headerLine;
-        while ((headerLine = reader.readLine()) != null && headerLine.contains(":")) {
+        var headerLine = "";
+        while ((headerLine = reader.readLine()) != null && headerLine.indexOf(':') > 0) {
             var header = headerLine.split(":", 2);
-            headers.put(header[0], header[1].startsWith(" ") ? header[1].substring(1) : header[1]);
+            headers.put(header[0], header[1].indexOf(' ') == 0 ? header[1].substring(1) : header[1]);
         }
 
         // TODO: Add properly? reading request body, this seems to work *for now*
@@ -124,11 +134,10 @@ public class Request {
         if (contentLengthHeader.isEmpty()) return;
 
         var contentLength = Integer.parseInt(contentLengthHeader);
-
         try (var baos = new ByteArrayOutputStream()) {
-            int ch;
-            while (contentLength > 0 && (ch = reader.read()) != -1) {
-                baos.write(ch);
+            var chr = -1;
+            while (contentLength > 0 && (chr = reader.read()) != -1) {
+                baos.write(chr);
 
                 contentLength--;
             }

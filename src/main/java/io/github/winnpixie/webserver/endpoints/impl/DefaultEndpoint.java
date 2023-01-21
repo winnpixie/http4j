@@ -2,9 +2,8 @@ package io.github.winnpixie.webserver.endpoints.impl;
 
 import io.github.winnpixie.webserver.endpoints.Endpoint;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 public class DefaultEndpoint extends Endpoint {
@@ -24,16 +23,18 @@ public class DefaultEndpoint extends Endpoint {
                 if (!file.getCanonicalPath().startsWith(request.getRequestThread().getServer().getRootDirectory().getCanonicalPath())
                         || !file.exists()) {
                     if (file.exists()) {
-                        System.out.println("Prevented read from file outside of server root directory");
+                        response.getRequest().getRequestThread().getServer().getLogger()
+                                .warning("Prevented read from file outside of server root directory");
                     }
 
                     response.setStatusCode(404);
                     response.setReasonPhrase("Not Found");
                 } else {
-                    try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                        int ch;
-                        while ((ch = reader.read()) != -1) {
-                            body.write(ch);
+                    try (var fileStream = new FileInputStream(file)) {
+                        byte[] buffer = new byte[8192];
+                        var read = -1;
+                        while ((read = fileStream.read(buffer)) != -1) {
+                            body.write(read);
                         }
                     }
 

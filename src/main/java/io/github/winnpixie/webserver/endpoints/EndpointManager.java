@@ -15,12 +15,12 @@ public class EndpointManager {
         return endpoints;
     }
 
-    public void register(@NotNull Endpoint endpoint) {
-        endpoints.add(endpoint);
+    public boolean register(@NotNull Endpoint endpoint) {
+        return endpoints.add(endpoint);
     }
 
-    public void unregister(@NotNull Endpoint endpoint) {
-        endpoints.remove(endpoint);
+    public boolean unregister(@NotNull Endpoint endpoint) {
+        return endpoints.remove(endpoint);
     }
 
     public Endpoint getEndpoint(@NotNull String path) {

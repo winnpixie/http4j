@@ -6,19 +6,23 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.logging.Logger;
 
 public class HttpServer {
+    private final Logger logger = Logger.getLogger(HttpServer.class.getName());
     private int port;
     private File rootDirectory;
     private boolean running;
-    private final EndpointManager endpointManager;
+    private final EndpointManager endpointManager = new EndpointManager();
     private Thread serverThread;
 
     public HttpServer(int port, @NotNull File rootDirectory) {
         this.port = port;
         this.rootDirectory = rootDirectory;
+    }
 
-        this.endpointManager = new EndpointManager();
+    public Logger getLogger() {
+        return logger;
     }
 
     public int getPort() {
@@ -61,7 +65,8 @@ public class HttpServer {
     private void startThread() {
         this.serverThread = new Thread(() -> {
             try (var srvSocket = new ServerSocket(port)) {
-                System.out.printf("JWS started on %s:%d\n", srvSocket.getInetAddress().getHostName(), srvSocket.getLocalPort());
+                logger.info("Http Server started at %s:%d"
+                        .formatted(srvSocket.getInetAddress().getHostName(), srvSocket.getLocalPort()));
 
                 while (running) {
                     var socket = srvSocket.accept();

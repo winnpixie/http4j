@@ -29,8 +29,8 @@ public class RequestThread extends Thread {
             var request = new Request(this);
             request.read();
 
-            Response response = new Response(request);
-            if (request.getHeader("Host", false).isEmpty() || !request.getPath().startsWith("/")) {
+            var response = new Response(request);
+            if (request.getHeader("Host", false).isEmpty() || request.getPath().indexOf('/') > 0) {
                 response.setStatusCode(400);
                 response.setReasonPhrase("Bad Request");
             } else {
@@ -38,8 +38,9 @@ public class RequestThread extends Thread {
             }
             response.write();
 
-            System.out.printf("%s '%s' (%d) [%s]\n", sock.getInetAddress(), request.getPath(),
-                    response.getStatusCode(), request.getHeader("User-Agent", false));
+            server.getLogger().info("ip=%s dest='%s' code=%d ua='%s'"
+                    .formatted(sock.getInetAddress(), request.getPath(), response.getStatusCode(),
+                            request.getHeader("User-Agent", false)));
         } catch (Exception e) {
             e.printStackTrace();
         }
