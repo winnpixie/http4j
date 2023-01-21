@@ -107,7 +107,7 @@ public class Request {
 
     public void read() throws Exception {
         var is = requestThread.getSocketHandler().getInputStream();
-        if (is == null) throw new RuntimeException("Unable to retrieve input stream!");
+        if (is == null) throw new RuntimeException("Unable to retrieve input stream.");
 
         var reader = new BufferedReader(new InputStreamReader(is));
         var httpHeader = reader.readLine().split(" ");

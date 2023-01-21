@@ -38,7 +38,7 @@ public class RequestThread extends Thread {
             }
             response.write();
 
-            server.getLogger().info("ip=%s dest='%s' code=%d ua='%s'"
+            server.getLogger().info("ip-addr=%s path='%s' status-code=%d user-agent='%s'"
                     .formatted(sock.getInetAddress(), request.getPath(), response.getStatusCode(),
                             request.getHeader("User-Agent", false)));
         } catch (Exception e) {
