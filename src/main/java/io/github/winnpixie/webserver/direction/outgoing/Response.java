@@ -1,5 +1,6 @@
-package io.github.winnpixie.webserver;
+package io.github.winnpixie.webserver.direction.outgoing;
 
+import io.github.winnpixie.webserver.direction.incoming.Request;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;

@@ -31,7 +31,7 @@ public class DefaultEndpoint extends Endpoint {
                     response.setReasonPhrase("Not Found");
                 } else {
                     try (var fileStream = new FileInputStream(file)) {
-                        byte[] buffer = new byte[8192];
+                        var buffer = new byte[8192]; // 8K buffer
                         var read = -1;
                         while ((read = fileStream.read(buffer)) != -1) {
                             body.write(buffer, 0, read);

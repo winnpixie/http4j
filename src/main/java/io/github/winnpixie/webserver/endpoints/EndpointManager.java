@@ -25,9 +25,9 @@ public class EndpointManager {
 
     public Endpoint getEndpoint(@NotNull String path) {
         for (Endpoint endpoint : endpoints) {
-            if (path.startsWith(endpoint.getPath())) {
-                return endpoint;
-            }
+            if (!path.startsWith(endpoint.getPath())) continue;
+
+            return endpoint;
         }
 
         return defaultEndpoint;

@@ -1,4 +1,4 @@
-package io.github.winnpixie.webserver;
+package io.github.winnpixie.webserver.direction.incoming;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -68,10 +68,10 @@ public class Request {
     @NotNull
     public Map<String, String> getQueries() {
         var queries = new HashMap<String, String>();
-        String[] entries = this.query.split("&");
+        var entries = this.query.split("&");
 
-        for (String entry : entries) {
-            String[] pair = entry.split("=", 2);
+        for (var entry : entries) {
+            var pair = entry.split("=", 2);
             queries.put(pair[0], pair.length > 1 ? pair[1] : "");
         }
 
@@ -114,7 +114,7 @@ public class Request {
         this.method = httpHeader[0];
         this.path = httpHeader[1];
 
-        int queryIdx = path.indexOf('?');
+        var queryIdx = path.indexOf('?');
         if (queryIdx > 0) { // Query can not be the first character in path.
             this.query = path.substring(queryIdx + 1);
             this.path = path.substring(0, queryIdx);
@@ -130,10 +130,10 @@ public class Request {
         }
 
         // TODO: Add properly? reading request body, this seems to work *for now*
-        var contentLengthHeader = getHeader("Content-Length", false);
-        if (contentLengthHeader.isEmpty()) return;
+        var reportedContentLength = getHeader("Content-Length", false);
+        if (reportedContentLength.isEmpty()) return;
 
-        var contentLength = Integer.parseInt(contentLengthHeader);
+        var contentLength = Integer.parseInt(reportedContentLength);
         try (var baos = new ByteArrayOutputStream()) {
             var chr = -1;
             while (contentLength > 0 && (chr = reader.read()) != -1) {

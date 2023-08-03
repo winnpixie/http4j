@@ -1,9 +1,10 @@
 package io.github.winnpixie.webserver;
 
+import io.github.winnpixie.webserver.direction.incoming.RequestThread;
 import org.jetbrains.annotations.NotNull;
 
+import javax.net.ServerSocketFactory;
 import java.io.IOException;
-import java.net.ServerSocket;
 
 public class HttpServerThread extends Thread {
     private final HttpServer server;
@@ -14,7 +15,7 @@ public class HttpServerThread extends Thread {
 
     @Override
     public void run() {
-        try (var srvSocket = new ServerSocket(server.getPort())) {
+        try (var srvSocket = ServerSocketFactory.getDefault().createServerSocket(server.getPort())) {
             server.getLogger().info("Http Server started at %s:%d"
                     .formatted(srvSocket.getInetAddress().getHostName(), srvSocket.getLocalPort()));
 

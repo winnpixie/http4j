@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.logging.Logger;
 
 public class HttpServer {
+    // TODO: Create a custom logger implementation so as to not produce extraneous output.
     private final Logger logger = Logger.getLogger(HttpServer.class.getName());
     private int port;
     private File rootDirectory;

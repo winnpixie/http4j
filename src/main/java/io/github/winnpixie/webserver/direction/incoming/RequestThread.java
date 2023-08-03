@@ -1,5 +1,8 @@
-package io.github.winnpixie.webserver;
+package io.github.winnpixie.webserver.direction.incoming;
 
+import io.github.winnpixie.webserver.HttpServer;
+import io.github.winnpixie.webserver.direction.outgoing.Response;
+import io.github.winnpixie.webserver.direction.shared.SocketHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.Socket;
@@ -11,6 +14,8 @@ public class RequestThread extends Thread {
     public RequestThread(@NotNull HttpServer server, @NotNull Socket socket) {
         this.server = server;
         this.socketHandler = new SocketHandler(socket);
+
+        super.setName("jws-%s-%d".formatted(socket.getInetAddress(), System.nanoTime()));
     }
 
     @NotNull
