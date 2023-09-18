@@ -5,6 +5,8 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.net.ServerSocketFactory;
 import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 public class HttpServerThread extends Thread {
     private final HttpServer server;
@@ -15,12 +17,12 @@ public class HttpServerThread extends Thread {
 
     @Override
     public void run() {
-        try (var srvSocket = ServerSocketFactory.getDefault().createServerSocket(server.getPort())) {
+        try (ServerSocket srvSocket = ServerSocketFactory.getDefault().createServerSocket(server.getPort())) {
             server.getLogger().info("Http Server started at %s:%d"
                     .formatted(srvSocket.getInetAddress().getHostName(), srvSocket.getLocalPort()));
 
             while (server.isRunning()) {
-                var socket = srvSocket.accept();
+                Socket socket = srvSocket.accept();
                 socket.setSoTimeout(15000);
                 new RequestThread(server, socket).start();
             }

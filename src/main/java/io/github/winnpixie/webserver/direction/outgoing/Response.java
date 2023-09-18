@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,7 +63,7 @@ public class Response {
     }
 
     public void write() throws Exception {
-        var os = request.getRequestThread().getSocketHandler().getOutputStream();
+        OutputStream os = request.getRequestThread().getSocketHandler().getOutputStream();
         if (os == null) throw new RuntimeException("No output stream to write to.");
 
         os.write("HTTP/1.0 %d %s\n".formatted(statusCode, reasonPhrase).getBytes(StandardCharsets.UTF_8));

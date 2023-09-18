@@ -30,11 +30,11 @@ public class RequestThread extends Thread {
 
     @Override
     public void run() {
-        try (var sock = socketHandler.getSocket()) {
-            var request = new Request(this);
+        try (Socket sock = socketHandler.getSocket()) {
+            Request request = new Request(this);
             request.read();
 
-            var response = new Response(request);
+            Response response = new Response(request);
             if (request.getHeader("Host", false).isEmpty() || request.getPath().indexOf('/') > 0) {
                 response.setStatusCode(400);
                 response.setReasonPhrase("Bad Request");

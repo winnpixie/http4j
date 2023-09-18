@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,10 +52,10 @@ public class Request {
 
     @NotNull
     public String getQuery(@NotNull String key, boolean exact) {
-        var entries = this.query.split("&");
+        String[] entries = this.query.split("&");
 
-        for (var entry : entries) {
-            var pair = entry.split("=", 2);
+        for (String entry : entries) {
+            String[] pair = entry.split("=", 2);
 
             if (!pair[0].equals(key) && exact) continue;
             if (!pair[0].equalsIgnoreCase(key)) continue;
@@ -67,11 +68,11 @@ public class Request {
 
     @NotNull
     public Map<String, String> getQueries() {
-        var queries = new HashMap<String, String>();
-        var entries = this.query.split("&");
+        Map<String, String> queries = new HashMap<>();
+        String[] entries = this.query.split("&");
 
-        for (var entry : entries) {
-            var pair = entry.split("=", 2);
+        for (String entry : entries) {
+            String[] pair = entry.split("=", 2);
             queries.put(pair[0], pair.length > 1 ? pair[1] : "");
         }
 
@@ -92,7 +93,7 @@ public class Request {
     public String getHeader(@NotNull String name, boolean exact) {
         if (exact) return headers.getOrDefault(name, "");
 
-        for (var entry : headers.entrySet()) {
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
             if (!entry.getKey().equalsIgnoreCase(name)) continue;
 
             return entry.getValue();
@@ -106,15 +107,15 @@ public class Request {
     }
 
     public void read() throws Exception {
-        var is = requestThread.getSocketHandler().getInputStream();
+        InputStream is = requestThread.getSocketHandler().getInputStream();
         if (is == null) throw new RuntimeException("Unable to retrieve input stream.");
 
-        var reader = new BufferedReader(new InputStreamReader(is));
-        var httpHeader = reader.readLine().split(" ");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        String[] httpHeader = reader.readLine().split(" ");
         this.method = httpHeader[0];
         this.path = httpHeader[1];
 
-        var queryIdx = path.indexOf('?');
+        int queryIdx = path.indexOf('?');
         if (queryIdx > 0) { // Query can not be the first character in path.
             this.query = path.substring(queryIdx + 1);
             this.path = path.substring(0, queryIdx);
@@ -123,19 +124,19 @@ public class Request {
         this.protocol = httpHeader[2];
 
         this.headers = new HashMap<>();
-        var headerLine = "";
+        String headerLine = "";
         while ((headerLine = reader.readLine()) != null && headerLine.indexOf(':') > 0) {
-            var header = headerLine.split(":", 2);
+            String[] header = headerLine.split(":", 2);
             headers.put(header[0], header[1].indexOf(' ') == 0 ? header[1].substring(1) : header[1]);
         }
 
         // TODO: Add properly? reading request body, this seems to work *for now*
-        var reportedContentLength = getHeader("Content-Length", false);
+        String reportedContentLength = getHeader("Content-Length", false);
         if (reportedContentLength.isEmpty()) return;
 
-        var contentLength = Integer.parseInt(reportedContentLength);
-        try (var baos = new ByteArrayOutputStream()) {
-            var chr = -1;
+        int contentLength = Integer.parseInt(reportedContentLength);
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            int chr = -1;
             while (contentLength > 0 && (chr = reader.read()) != -1) {
                 baos.write(chr);
 
