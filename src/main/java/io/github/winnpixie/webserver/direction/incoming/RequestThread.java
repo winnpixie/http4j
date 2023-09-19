@@ -15,7 +15,7 @@ public class RequestThread extends Thread {
         this.server = server;
         this.socketHandler = new SocketHandler(socket);
 
-        super.setName("jws-%s-%d".formatted(socket.getInetAddress(), System.nanoTime()));
+        super.setName("java-web-server_%s_%d".formatted(socket.getInetAddress(), System.nanoTime()));
     }
 
     @NotNull

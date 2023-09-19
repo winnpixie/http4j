@@ -34,7 +34,7 @@ public class DefaultEndpoint extends Endpoint {
                 } else {
                     try (FileInputStream fileStream = new FileInputStream(file)) {
                         byte[] buffer = new byte[8192]; // 8K buffer
-                        int read = -1;
+                        int read;
                         while ((read = fileStream.read(buffer)) != -1) {
                             body.write(buffer, 0, read);
                         }

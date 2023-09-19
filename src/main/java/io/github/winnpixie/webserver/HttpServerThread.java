@@ -3,7 +3,6 @@ package io.github.winnpixie.webserver;
 import io.github.winnpixie.webserver.direction.incoming.RequestThread;
 import org.jetbrains.annotations.NotNull;
 
-import javax.net.ServerSocketFactory;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -17,7 +16,7 @@ public class HttpServerThread extends Thread {
 
     @Override
     public void run() {
-        try (ServerSocket srvSocket = ServerSocketFactory.getDefault().createServerSocket(server.getPort())) {
+        try (ServerSocket srvSocket = new ServerSocket(server.getPort())) {
             server.getLogger().info("Http Server started at %s:%d"
                     .formatted(srvSocket.getInetAddress().getHostName(), srvSocket.getLocalPort()));
 

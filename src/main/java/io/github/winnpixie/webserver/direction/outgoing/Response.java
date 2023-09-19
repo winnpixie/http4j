@@ -76,8 +76,8 @@ public class Response {
             }
         });
 
-        os.write("\n".getBytes(StandardCharsets.UTF_8));
-
-        os.write(body.toByteArray());
+        byte[] body = this.body.toByteArray();
+        os.write("Content-Length: %d\n\n".formatted(body.length).getBytes(StandardCharsets.UTF_8));
+        os.write(body);
     }
 }

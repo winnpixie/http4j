@@ -8,13 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-public class SocketHandler {
-    private final Socket socket;
-
-    public SocketHandler(@NotNull Socket socket) {
-        this.socket = socket;
-    }
-
+public record SocketHandler(@NotNull Socket socket) {
     @NotNull
     public Socket getSocket() {
         return socket;

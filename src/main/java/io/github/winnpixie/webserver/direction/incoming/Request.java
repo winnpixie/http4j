@@ -136,7 +136,7 @@ public class Request {
 
         int contentLength = Integer.parseInt(reportedContentLength);
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            int chr = -1;
+            int chr;
             while (contentLength > 0 && (chr = reader.read()) != -1) {
                 baos.write(chr);
 
