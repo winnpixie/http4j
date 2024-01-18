@@ -1,4 +1,4 @@
-package io.github.winnpixie.webserver;
+package io.github.winnpixie.httpsrv;
 
 import java.io.File;
 

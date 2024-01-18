@@ -1,6 +1,6 @@
-package io.github.winnpixie.webserver.endpoints;
+package io.github.winnpixie.httpsrv.endpoints;
 
-import io.github.winnpixie.webserver.direction.outgoing.Response;
+import io.github.winnpixie.httpsrv.direction.outgoing.Response;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;

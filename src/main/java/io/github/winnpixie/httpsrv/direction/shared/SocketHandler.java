@@ -1,4 +1,4 @@
-package io.github.winnpixie.webserver.direction.shared;
+package io.github.winnpixie.httpsrv.direction.shared;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

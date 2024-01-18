@@ -1,2 +1,2 @@
 Manifest-Version: 1.0
-Main-Class: io.github.winnpixie.webserver.HttpServerMain
+Main-Class: io.github.winnpixie.httpsrv.HttpServerMain

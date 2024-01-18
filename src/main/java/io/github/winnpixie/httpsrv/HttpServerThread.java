@@ -1,6 +1,6 @@
-package io.github.winnpixie.webserver;
+package io.github.winnpixie.httpsrv;
 
-import io.github.winnpixie.webserver.direction.incoming.RequestThread;
+import io.github.winnpixie.httpsrv.direction.incoming.RequestThread;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -23,6 +23,7 @@ public class HttpServerThread extends Thread {
             while (server.isRunning()) {
                 Socket socket = srvSocket.accept();
                 socket.setSoTimeout(15000);
+
                 new RequestThread(server, socket).start();
             }
         } catch (IOException e) {

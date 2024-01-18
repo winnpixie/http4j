@@ -1,6 +1,7 @@
-package io.github.winnpixie.webserver.direction.outgoing;
+package io.github.winnpixie.httpsrv.direction.outgoing;
 
-import io.github.winnpixie.webserver.direction.incoming.Request;
+import io.github.winnpixie.httpsrv.direction.incoming.Request;
+import io.github.winnpixie.httpsrv.direction.incoming.RequestMethod;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
@@ -16,11 +17,11 @@ public class Response {
     private final Map<String, String> headers = new HashMap<>() {
         {
             put("Connection", "close");
+            put("Server", "http-srv/0.3");
         }
     };
 
-    private int statusCode = 500;
-    private String reasonPhrase = "Internal Server Error";
+    private ResponseStatus status = ResponseStatus.INTERNAL_SERVER_ERROR;
 
     public Response(@NotNull Request request) {
         this.request = request;
@@ -45,28 +46,38 @@ public class Response {
         headers.put(key, value);
     }
 
-    public int getStatusCode() {
-        return statusCode;
+    public ResponseStatus getStatus() {
+        return status;
     }
 
-    public void setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
+    public void setStatus(ResponseStatus status) {
+        this.status = status;
     }
 
-    @NotNull
-    public String getReasonPhrase() {
-        return reasonPhrase;
+    public void setRedirect(ResponseStatus status, String destination) {
+        setStatus(status);
+        setHeader("Location", destination);
     }
 
-    public void setReasonPhrase(@NotNull String reasonPhrase) {
-        this.reasonPhrase = reasonPhrase;
+    public void setPermanentRedirect(String destination) {
+        setRedirect(ResponseStatus.MOVED_PERMANENTLY, destination);
+    }
+
+    public void setTemporaryRedirect(String destination) {
+        setRedirect(ResponseStatus.MOVED_TEMPORARILY, destination);
+    }
+
+    public void brewCoffee() {
+        setStatus(ResponseStatus.IM_A_TEAPOT);
     }
 
     public void write() throws Exception {
         OutputStream os = request.getRequestThread().getSocketHandler().getOutputStream();
         if (os == null) throw new RuntimeException("No output stream to write to.");
 
-        os.write("HTTP/1.0 %d %s\n".formatted(statusCode, reasonPhrase).getBytes(StandardCharsets.UTF_8));
+        if (request.getProtocol().startsWith("HTCPCP/")) brewCoffee();
+
+        os.write("HTTP/1.0 %d %s\n".formatted(status.getCode(), status.getReasonPhrase()).getBytes(StandardCharsets.UTF_8));
 
         headers.forEach((key, value) -> {
             try {
@@ -78,6 +89,6 @@ public class Response {
 
         byte[] body = this.body.toByteArray();
         os.write("Content-Length: %d\n\n".formatted(body.length).getBytes(StandardCharsets.UTF_8));
-        os.write(body);
+        if (!request.getMethod().equals(RequestMethod.HEAD)) os.write(body);
     }
 }

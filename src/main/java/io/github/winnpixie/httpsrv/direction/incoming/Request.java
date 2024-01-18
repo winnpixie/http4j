@@ -1,4 +1,4 @@
-package io.github.winnpixie.webserver.direction.incoming;
+package io.github.winnpixie.httpsrv.direction.incoming;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -12,7 +12,7 @@ import java.util.Map;
 public class Request {
     private final RequestThread requestThread;
 
-    private String method;
+    private RequestMethod method;
     private String path;
     private String query;
     private String protocol;
@@ -22,7 +22,7 @@ public class Request {
     public Request(@NotNull RequestThread requestThread) {
         this.requestThread = requestThread;
 
-        this.method = "";
+        this.method = RequestMethod.UNKNOWN;
         this.path = "";
         this.query = "";
         this.protocol = "";
@@ -36,7 +36,7 @@ public class Request {
     }
 
     @NotNull
-    public String getMethod() {
+    public RequestMethod getMethod() {
         return method;
     }
 
@@ -112,7 +112,7 @@ public class Request {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         String[] httpHeader = reader.readLine().split(" ");
-        this.method = httpHeader[0];
+        this.method = RequestMethod.fromName(httpHeader[0]);
         this.path = httpHeader[1];
 
         int queryIdx = path.indexOf('?');

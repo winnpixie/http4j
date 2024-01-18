@@ -1,6 +1,6 @@
-package io.github.winnpixie.webserver;
+package io.github.winnpixie.httpsrv;
 
-import io.github.winnpixie.webserver.endpoints.EndpointManager;
+import io.github.winnpixie.httpsrv.endpoints.EndpointManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -10,14 +10,14 @@ public class HttpServer {
     // TODO: Create a custom logger implementation so as to not produce extraneous output.
     private final Logger logger = Logger.getLogger(HttpServer.class.getName());
     private int port;
-    private File rootDirectory;
+    private File root;
     private boolean running;
     private final EndpointManager endpointManager = new EndpointManager();
     private final HttpServerThread serverThread;
 
-    public HttpServer(int port, @NotNull File rootDirectory) {
+    public HttpServer(int port, @NotNull File root) {
         this.port = port;
-        this.rootDirectory = rootDirectory;
+        this.root = root;
 
         this.serverThread = new HttpServerThread(this);
     }
@@ -38,12 +38,12 @@ public class HttpServer {
     }
 
     @NotNull
-    public File getRootDirectory() {
-        return rootDirectory;
+    public File getRoot() {
+        return root;
     }
 
-    public void setRootDirectory(@NotNull File rootDirectory) {
-        this.rootDirectory = rootDirectory;
+    public void setRoot(@NotNull File root) {
+        this.root = root;
     }
 
     public boolean isRunning() {
@@ -67,7 +67,7 @@ public class HttpServer {
         try {
             serverThread.join();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 }

@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.winnpixie</groupId>
-    <artifactId>java-web-server</artifactId>
-    <version>0.2.4-SNAPSHOT</version>
+    <artifactId>http-srv</artifactId>
+    <version>0.3-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
