@@ -1,7 +1,6 @@
 package io.github.winnpixie.httpsrv;
 
 import io.github.winnpixie.httpsrv.endpoints.EndpointManager;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.logging.Logger;
@@ -15,14 +14,13 @@ public class HttpServer {
     private final EndpointManager endpointManager = new EndpointManager();
     private final HttpServerThread serverThread;
 
-    public HttpServer(int port, @NotNull File root) {
+    public HttpServer(int port, File root) {
         this.port = port;
         this.root = root;
 
         this.serverThread = new HttpServerThread(this);
     }
 
-    @NotNull
     public Logger getLogger() {
         return logger;
     }
@@ -37,12 +35,11 @@ public class HttpServer {
         this.port = port;
     }
 
-    @NotNull
     public File getRoot() {
         return root;
     }
 
-    public void setRoot(@NotNull File root) {
+    public void setRoot(File root) {
         this.root = root;
     }
 
@@ -50,7 +47,6 @@ public class HttpServer {
         return running;
     }
 
-    @NotNull
     public EndpointManager getEndpointManager() {
         return endpointManager;
     }

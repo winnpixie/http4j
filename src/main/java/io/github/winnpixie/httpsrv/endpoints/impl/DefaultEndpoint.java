@@ -38,7 +38,7 @@ public class DefaultEndpoint extends Endpoint {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                return;
+                return; // TODO: Is this the correct approach?
             }
 
             try (ByteArrayOutputStream body = response.getBody();

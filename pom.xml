@@ -12,14 +12,6 @@
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>23.1.0</version>
-        </dependency>
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>

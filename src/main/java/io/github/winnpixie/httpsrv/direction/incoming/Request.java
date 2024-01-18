@@ -1,7 +1,5 @@
 package io.github.winnpixie.httpsrv.direction.incoming;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -19,7 +17,7 @@ public class Request {
     private Map<String, String> headers;
     private byte[] body;
 
-    public Request(@NotNull RequestThread requestThread) {
+    public Request(RequestThread requestThread) {
         this.requestThread = requestThread;
 
         this.method = RequestMethod.UNKNOWN;
@@ -30,28 +28,23 @@ public class Request {
         this.body = new byte[0];
     }
 
-    @NotNull
     public RequestThread getRequestThread() {
         return requestThread;
     }
 
-    @NotNull
     public RequestMethod getMethod() {
         return method;
     }
 
-    @NotNull
     public String getPath() {
         return path;
     }
 
-    @NotNull
     public String getQuery() {
         return query;
     }
 
-    @NotNull
-    public String getQuery(@NotNull String key, boolean exact) {
+    public String getQuery(String key, boolean exact) {
         String[] entries = this.query.split("&");
 
         for (String entry : entries) {
@@ -66,7 +59,6 @@ public class Request {
         return "";
     }
 
-    @NotNull
     public Map<String, String> getQueries() {
         Map<String, String> queries = new HashMap<>();
         String[] entries = this.query.split("&");
@@ -79,18 +71,15 @@ public class Request {
         return queries;
     }
 
-    @NotNull
     public String getProtocol() {
         return protocol;
     }
 
-    @NotNull
     public Map<String, String> getHeaders() {
         return headers;
     }
 
-    @NotNull
-    public String getHeader(@NotNull String name, boolean exact) {
+    public String getHeader(String name, boolean exact) {
         if (exact) return headers.getOrDefault(name, "");
 
         for (Map.Entry<String, String> entry : headers.entrySet()) {

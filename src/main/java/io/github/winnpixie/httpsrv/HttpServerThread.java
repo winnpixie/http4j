@@ -1,7 +1,6 @@
 package io.github.winnpixie.httpsrv;
 
 import io.github.winnpixie.httpsrv.direction.incoming.RequestThread;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -10,7 +9,7 @@ import java.net.Socket;
 public class HttpServerThread extends Thread {
     private final HttpServer server;
 
-    public HttpServerThread(@NotNull HttpServer server) {
+    public HttpServerThread(HttpServer server) {
         this.server = server;
     }
 

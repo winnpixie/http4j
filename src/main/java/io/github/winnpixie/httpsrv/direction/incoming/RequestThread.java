@@ -4,7 +4,6 @@ import io.github.winnpixie.httpsrv.HttpServer;
 import io.github.winnpixie.httpsrv.direction.outgoing.Response;
 import io.github.winnpixie.httpsrv.direction.outgoing.ResponseStatus;
 import io.github.winnpixie.httpsrv.direction.shared.SocketHandler;
-import org.jetbrains.annotations.NotNull;
 
 import java.net.Socket;
 
@@ -12,19 +11,17 @@ public class RequestThread extends Thread {
     private final HttpServer server;
     private final SocketHandler socketHandler;
 
-    public RequestThread(@NotNull HttpServer server, @NotNull Socket socket) {
+    public RequestThread(HttpServer server, Socket socket) {
         this.server = server;
         this.socketHandler = new SocketHandler(socket);
 
         super.setName("http-srv_%s_%d".formatted(socket.getInetAddress(), System.nanoTime()));
     }
 
-    @NotNull
     public HttpServer getServer() {
         return server;
     }
 
-    @NotNull
     public SocketHandler getSocketHandler() {
         return socketHandler;
     }

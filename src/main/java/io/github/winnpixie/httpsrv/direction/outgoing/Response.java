@@ -2,7 +2,6 @@ package io.github.winnpixie.httpsrv.direction.outgoing;
 
 import io.github.winnpixie.httpsrv.direction.incoming.Request;
 import io.github.winnpixie.httpsrv.direction.incoming.RequestMethod;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,26 +22,23 @@ public class Response {
 
     private ResponseStatus status = ResponseStatus.INTERNAL_SERVER_ERROR;
 
-    public Response(@NotNull Request request) {
+    public Response(Request request) {
         this.request = request;
     }
 
-    @NotNull
     public Request getRequest() {
         return request;
     }
 
-    @NotNull
     public ByteArrayOutputStream getBody() {
         return body;
     }
 
-    @NotNull
     public Map<String, String> getHeaders() {
         return headers;
     }
 
-    public void setHeader(@NotNull String key, @NotNull String value) {
+    public void setHeader(String key, String value) {
         headers.put(key, value);
     }
 
