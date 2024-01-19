@@ -13,7 +13,8 @@ public class DefaultEndpoint extends Endpoint {
     public DefaultEndpoint() {
         super("/", response -> {
             Request request = response.getRequest();
-            File file = new File(request.getRequestThread().getServer().getRoot(), request.getPath());
+            String path = request.getPath().substring(1);
+            File file = new File(request.getRequestThread().getServer().getRoot(), path);
             if (file.isDirectory()) file = new File(file, "index.html");
 
             if (!file.exists()) {
@@ -21,7 +22,7 @@ public class DefaultEndpoint extends Endpoint {
                 return;
             }
 
-            if (!file.isDirectory() && request.getPath().endsWith("/")) {
+            if (!file.isDirectory() && path.endsWith("/")) {
                 response.setStatus(ResponseStatus.NOT_FOUND);
                 return;
             }

@@ -16,7 +16,7 @@ public class Response {
     private final Map<String, String> headers = new HashMap<>() {
         {
             put("Connection", "close");
-            put("Server", "http-srv/0.3");
+            put("Server", "http-srv/0.3.1");
         }
     };
 
