@@ -18,8 +18,8 @@ public class HttpServerMain {
                     break;
                 case "--root":
                     StringBuilder pathBuilder = new StringBuilder();
-                    for (int i2 = 1; i2 < args.length; i2++) {
-                        String nextArg = args[i + i2];
+                    for (int si = 1; si < args.length - i; si++) {
+                        String nextArg = args[i + si];
                         if (nextArg.equalsIgnoreCase("--port") || nextArg.equalsIgnoreCase("-p")) break;
 
                         pathBuilder.append(nextArg);

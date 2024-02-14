@@ -15,14 +15,13 @@ public class DefaultEndpoint extends Endpoint {
             Request request = response.getRequest();
             String path = request.getPath().substring(1);
             File file = new File(request.getRequestThread().getServer().getRoot(), path);
-            if (file.isDirectory()) file = new File(file, "index.html");
-
-            if (!file.exists()) {
+            if (!file.isDirectory() && path.endsWith("/")) {
                 response.setStatus(ResponseStatus.NOT_FOUND);
                 return;
             }
 
-            if (!file.isDirectory() && path.endsWith("/")) {
+            if (file.isDirectory()) file = new File(file, "index.html");
+            if (!file.exists()) {
                 response.setStatus(ResponseStatus.NOT_FOUND);
                 return;
             }
