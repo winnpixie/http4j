@@ -1,11 +1,11 @@
-package io.github.winnpixie.httpsrv.direction.shared;
+package io.github.winnpixie.http4j.server.direction.shared;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-public record SocketHandler(Socket socket) {
+public record HttpSocketHandler(Socket socket) {
 
     public Socket getSocket() {
         return socket;

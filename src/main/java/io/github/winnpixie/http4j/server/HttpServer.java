@@ -1,6 +1,6 @@
-package io.github.winnpixie.httpsrv;
+package io.github.winnpixie.http4j.server;
 
-import io.github.winnpixie.httpsrv.endpoints.EndpointManager;
+import io.github.winnpixie.http4j.server.endpoints.HttpEndpointManager;
 
 import java.io.File;
 import java.util.logging.Logger;
@@ -11,7 +11,7 @@ public class HttpServer {
     private int port;
     private File root;
     private boolean running;
-    private final EndpointManager endpointManager = new EndpointManager();
+    private final HttpEndpointManager endpointManager = new HttpEndpointManager();
     private final HttpServerThread serverThread;
 
     public HttpServer(int port, File root) {
@@ -47,7 +47,7 @@ public class HttpServer {
         return running;
     }
 
-    public EndpointManager getEndpointManager() {
+    public HttpEndpointManager getEndpointManager() {
         return endpointManager;
     }
 

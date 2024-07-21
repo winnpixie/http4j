@@ -1,28 +1,28 @@
-package io.github.winnpixie.httpsrv.endpoints.impl;
+package io.github.winnpixie.http4j.server.endpoints.impl;
 
-import io.github.winnpixie.httpsrv.direction.incoming.Request;
-import io.github.winnpixie.httpsrv.direction.outgoing.ResponseStatus;
-import io.github.winnpixie.httpsrv.endpoints.Endpoint;
+import io.github.winnpixie.http4j.server.direction.incoming.HttpRequest;
+import io.github.winnpixie.http4j.shared.HttpResponseStatus;
+import io.github.winnpixie.http4j.server.endpoints.HttpEndpoint;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class DefaultEndpoint extends Endpoint {
-    public DefaultEndpoint() {
+public class LocalFileHttpEndpoint extends HttpEndpoint {
+    public LocalFileHttpEndpoint() {
         super("/", response -> {
-            Request request = response.getRequest();
+            HttpRequest request = response.getRequest();
             String path = request.getPath().substring(1);
             File file = new File(request.getRequestThread().getServer().getRoot(), path);
             if (!file.isDirectory() && path.endsWith("/")) {
-                response.setStatus(ResponseStatus.NOT_FOUND);
+                response.setStatus(HttpResponseStatus.NOT_FOUND);
                 return;
             }
 
             if (file.isDirectory()) file = new File(file, "index.html");
             if (!file.exists()) {
-                response.setStatus(ResponseStatus.NOT_FOUND);
+                response.setStatus(HttpResponseStatus.NOT_FOUND);
                 return;
             }
 
@@ -33,7 +33,7 @@ public class DefaultEndpoint extends Endpoint {
                     request.getRequestThread().getServer().getLogger()
                             .warning("Prevented read from file outside of server root!");
 
-                    response.setStatus(ResponseStatus.NOT_FOUND);
+                    response.setStatus(HttpResponseStatus.NOT_FOUND);
                     return;
                 }
             } catch (IOException e) {
@@ -49,7 +49,7 @@ public class DefaultEndpoint extends Endpoint {
                     body.write(buffer, 0, read);
                 }
 
-                response.setStatus(ResponseStatus.OK);
+                response.setStatus(HttpResponseStatus.OK);
             } catch (IOException e) {
                 e.printStackTrace();
             }

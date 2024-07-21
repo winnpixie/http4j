@@ -1,7 +1,8 @@
-package io.github.winnpixie.httpsrv.direction.outgoing;
+package io.github.winnpixie.http4j.server.direction.outgoing;
 
-import io.github.winnpixie.httpsrv.direction.incoming.Request;
-import io.github.winnpixie.httpsrv.direction.incoming.RequestMethod;
+import io.github.winnpixie.http4j.server.direction.incoming.HttpRequest;
+import io.github.winnpixie.http4j.server.direction.incoming.HttpMethod;
+import io.github.winnpixie.http4j.shared.HttpResponseStatus;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -10,23 +11,23 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Response {
-    private final Request request;
+public class HttpResponse {
+    private final HttpRequest request;
     private final ByteArrayOutputStream body = new ByteArrayOutputStream();
     private final Map<String, String> headers = new HashMap<>() {
         {
             put("Connection", "close");
-            put("Server", "http-srv/0.3.1");
+            put("Server", "winnpixie/http4j");
         }
     };
 
-    private ResponseStatus status = ResponseStatus.INTERNAL_SERVER_ERROR;
+    private HttpResponseStatus status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-    public Response(Request request) {
+    public HttpResponse(HttpRequest request) {
         this.request = request;
     }
 
-    public Request getRequest() {
+    public HttpRequest getRequest() {
         return request;
     }
 
@@ -42,29 +43,29 @@ public class Response {
         headers.put(key, value);
     }
 
-    public ResponseStatus getStatus() {
+    public HttpResponseStatus getStatus() {
         return status;
     }
 
-    public void setStatus(ResponseStatus status) {
+    public void setStatus(HttpResponseStatus status) {
         this.status = status;
     }
 
-    public void setRedirect(ResponseStatus status, String destination) {
+    public void setRedirect(HttpResponseStatus status, String destination) {
         setStatus(status);
         setHeader("Location", destination);
     }
 
     public void setPermanentRedirect(String destination) {
-        setRedirect(ResponseStatus.MOVED_PERMANENTLY, destination);
+        setRedirect(HttpResponseStatus.MOVED_PERMANENTLY, destination);
     }
 
     public void setTemporaryRedirect(String destination) {
-        setRedirect(ResponseStatus.MOVED_TEMPORARILY, destination);
+        setRedirect(HttpResponseStatus.MOVED_TEMPORARILY, destination);
     }
 
     public void brewCoffee() {
-        setStatus(ResponseStatus.IM_A_TEAPOT);
+        setStatus(HttpResponseStatus.IM_A_TEAPOT);
     }
 
     public void write() throws Exception {
@@ -85,6 +86,6 @@ public class Response {
 
         byte[] body = this.body.toByteArray();
         os.write("Content-Length: %d\n\n".formatted(body.length).getBytes(StandardCharsets.UTF_8));
-        if (!request.getMethod().equals(RequestMethod.HEAD)) os.write(body);
+        if (!request.getMethod().equals(HttpMethod.HEAD)) os.write(body);
     }
 }

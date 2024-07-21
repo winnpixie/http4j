@@ -1,4 +1,4 @@
-package io.github.winnpixie.httpsrv.direction.incoming;
+package io.github.winnpixie.http4j.server.direction.incoming;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -7,20 +7,20 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Request {
-    private final RequestThread requestThread;
+public class HttpRequest {
+    private final HttpRequestThread requestThread;
 
-    private RequestMethod method;
+    private HttpMethod method;
     private String path;
     private String query;
     private String protocol;
     private Map<String, String> headers;
     private byte[] body;
 
-    public Request(RequestThread requestThread) {
+    public HttpRequest(HttpRequestThread requestThread) {
         this.requestThread = requestThread;
 
-        this.method = RequestMethod.UNKNOWN;
+        this.method = HttpMethod.UNKNOWN;
         this.path = "";
         this.query = "";
         this.protocol = "";
@@ -28,11 +28,11 @@ public class Request {
         this.body = new byte[0];
     }
 
-    public RequestThread getRequestThread() {
+    public HttpRequestThread getRequestThread() {
         return requestThread;
     }
 
-    public RequestMethod getMethod() {
+    public HttpMethod getMethod() {
         return method;
     }
 
@@ -101,7 +101,7 @@ public class Request {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         String[] httpHeader = reader.readLine().split(" ");
-        this.method = RequestMethod.fromName(httpHeader[0]);
+        this.method = HttpMethod.fromName(httpHeader[0]);
         this.path = httpHeader[1];
 
         int queryIdx = path.indexOf('?');

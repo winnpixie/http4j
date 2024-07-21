@@ -1,6 +1,12 @@
-# http-srv
-HTTP/1.0 specifications (partially) implemented in Java.
+# http4j
+HTTP Client and Server utilities for Java
 
-## TODO
-Things I might work on adding *some day*...
-- [ ] SSL/TLS (HTTPS) support
+## TODO:
+Both:
+- [ ] Merge codebases to reduce fairly redundant code
+
+Client:
+- [ ] nothing (yet)
+
+Server:
+- [ ] TLS/SSL support (maybe)

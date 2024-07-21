@@ -1,6 +1,6 @@
-package io.github.winnpixie.httpsrv;
+package io.github.winnpixie.http4j.server;
 
-import io.github.winnpixie.httpsrv.direction.incoming.RequestThread;
+import io.github.winnpixie.http4j.server.direction.incoming.HttpRequestThread;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -23,7 +23,7 @@ public class HttpServerThread extends Thread {
                 Socket socket = srvSocket.accept();
                 socket.setSoTimeout(15000);
 
-                new RequestThread(server, socket).start();
+                new HttpRequestThread(server, socket).start();
             }
         } catch (IOException e) {
             e.printStackTrace();

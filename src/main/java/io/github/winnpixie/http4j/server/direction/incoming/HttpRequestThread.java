@@ -1,19 +1,19 @@
-package io.github.winnpixie.httpsrv.direction.incoming;
+package io.github.winnpixie.http4j.server.direction.incoming;
 
-import io.github.winnpixie.httpsrv.HttpServer;
-import io.github.winnpixie.httpsrv.direction.outgoing.Response;
-import io.github.winnpixie.httpsrv.direction.outgoing.ResponseStatus;
-import io.github.winnpixie.httpsrv.direction.shared.SocketHandler;
+import io.github.winnpixie.http4j.server.direction.outgoing.HttpResponse;
+import io.github.winnpixie.http4j.shared.HttpResponseStatus;
+import io.github.winnpixie.http4j.server.direction.shared.HttpSocketHandler;
+import io.github.winnpixie.http4j.server.HttpServer;
 
 import java.net.Socket;
 
-public class RequestThread extends Thread {
+public class HttpRequestThread extends Thread {
     private final HttpServer server;
-    private final SocketHandler socketHandler;
+    private final HttpSocketHandler socketHandler;
 
-    public RequestThread(HttpServer server, Socket socket) {
+    public HttpRequestThread(HttpServer server, Socket socket) {
         this.server = server;
-        this.socketHandler = new SocketHandler(socket);
+        this.socketHandler = new HttpSocketHandler(socket);
 
         super.setName("http-srv_%s_%d".formatted(socket.getInetAddress(), System.nanoTime()));
     }
@@ -22,19 +22,19 @@ public class RequestThread extends Thread {
         return server;
     }
 
-    public SocketHandler getSocketHandler() {
+    public HttpSocketHandler getSocketHandler() {
         return socketHandler;
     }
 
     @Override
     public void run() {
         try (Socket sock = socketHandler.getSocket()) {
-            Request request = new Request(this);
+            HttpRequest request = new HttpRequest(this);
             request.read();
 
-            Response response = new Response(request);
+            HttpResponse response = new HttpResponse(request);
             if (request.getHeader("Host", false).isEmpty() || request.getPath().indexOf('/') > 0) {
-                response.setStatus(ResponseStatus.BAD_REQUEST);
+                response.setStatus(HttpResponseStatus.BAD_REQUEST);
             } else {
                 server.getEndpointManager().getEndpoint(request.getPath()).getHandler().accept(response);
             }
