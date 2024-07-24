@@ -1,7 +1,7 @@
-package io.github.winnpixie.http4j.server.direction.outgoing;
+package io.github.winnpixie.http4j.server.outgoing;
 
-import io.github.winnpixie.http4j.server.direction.incoming.HttpRequest;
-import io.github.winnpixie.http4j.server.direction.incoming.HttpMethod;
+import io.github.winnpixie.http4j.server.incoming.HttpMethod;
+import io.github.winnpixie.http4j.server.incoming.HttpRequest;
 import io.github.winnpixie.http4j.shared.HttpResponseStatus;
 
 import java.io.ByteArrayOutputStream;
@@ -17,7 +17,7 @@ public class HttpResponse {
     private final Map<String, String> headers = new HashMap<>() {
         {
             put("Connection", "close");
-            put("Server", "winnpixie/http4j");
+            put("Server", "winnpixie/http4j (server)");
         }
     };
 
@@ -68,24 +68,24 @@ public class HttpResponse {
         setStatus(HttpResponseStatus.IM_A_TEAPOT);
     }
 
-    public void write() throws Exception {
-        OutputStream os = request.getRequestThread().getSocketHandler().getOutputStream();
+    public void write() throws IOException {
+        OutputStream os = request.getRequestThread().getSocket().getOutputStream();
         if (os == null) throw new RuntimeException("No output stream to write to.");
 
         if (request.getProtocol().startsWith("HTCPCP/")) brewCoffee();
 
-        os.write("HTTP/1.0 %d %s\n".formatted(status.getCode(), status.getReasonPhrase()).getBytes(StandardCharsets.UTF_8));
+        os.write("HTTP/1.1 %d %s\n".formatted(status.getCode(), status.getReasonPhrase()).getBytes(StandardCharsets.UTF_8));
 
         headers.forEach((key, value) -> {
             try {
                 os.write("%s: %s\n".formatted(key, value).getBytes(StandardCharsets.UTF_8));
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
             }
         });
+        os.write('\n');
 
-        byte[] body = this.body.toByteArray();
-        os.write("Content-Length: %d\n\n".formatted(body.length).getBytes(StandardCharsets.UTF_8));
-        if (!request.getMethod().equals(HttpMethod.HEAD)) os.write(body);
+        // HEAD = only headers get sent
+        if (!request.getMethod().equals(HttpMethod.HEAD)) os.write(this.body.toByteArray());
     }
 }

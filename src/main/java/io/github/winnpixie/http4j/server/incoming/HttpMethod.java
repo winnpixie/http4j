@@ -1,4 +1,4 @@
-package io.github.winnpixie.http4j.server.direction.incoming;
+package io.github.winnpixie.http4j.server.incoming;
 
 public enum HttpMethod {
     UNKNOWN,

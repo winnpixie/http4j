@@ -23,7 +23,7 @@ public class HttpMethod {
 
             try (InputStream is = conn.getInputStream()) {
                 request.getOnSuccess().accept(new HttpResponse(request, HttpResponseStatus.fromCode(conn.getResponseCode()),
-                        IOHelper.readFully(is), conn.getHeaderFields()));
+                        IOHelper.toByteArray(is), conn.getHeaderFields()));
             }
         } catch (Exception e) {
             request.getOnFailure().accept(e);
@@ -42,14 +42,15 @@ public class HttpMethod {
 
             request.getHeaders().forEach(conn::setRequestProperty);
 
-            conn.setRequestProperty("Content-Length", String.valueOf(request.getBody().length));
+            conn.setRequestProperty("Content-Length", Integer.toString(request.getBody().length));
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(request.getBody());
+                os.flush();
             }
 
             try (InputStream is = conn.getInputStream()) {
                 request.getOnSuccess().accept(new HttpResponse(request, HttpResponseStatus.fromCode(conn.getResponseCode()),
-                        IOHelper.readFully(is), conn.getHeaderFields()));
+                        IOHelper.toByteArray(is), conn.getHeaderFields()));
             }
         } catch (Exception e) {
             request.getOnFailure().accept(e);
@@ -76,13 +77,10 @@ public class HttpMethod {
     }
 
     public static HttpMethod getByVerb(String verb) {
-        switch (verb) {
-            case "GET":
-                return GET;
-            case "POST":
-                return POST;
-        }
-
-        return null;
+        return switch (verb) {
+            case "GET" -> GET;
+            case "POST" -> POST;
+            default -> null;
+        };
     }
 }

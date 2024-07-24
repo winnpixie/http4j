@@ -22,7 +22,7 @@ public class HttpClient {
     public HttpClient newRequest() {
         request = new HttpRequest();
 
-        return addHeader("User-Agent", "wp-http-client (java/http)");
+        return addHeader("User-Agent", "winnpixie/http4j (client)");
     }
 
     public HttpClient setMethod(HttpMethod method) {

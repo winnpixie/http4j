@@ -15,12 +15,16 @@ public class HttpServerMain {
                     if (i + 1 > args.length) return;
 
                     port = Integer.parseInt(args[i + 1]);
+                    i++;
                     break;
                 case "--root":
                     StringBuilder pathBuilder = new StringBuilder();
-                    for (int si = 1; si < args.length - i; si++) {
-                        String nextArg = args[i + si];
-                        if (nextArg.equalsIgnoreCase("--port") || nextArg.equalsIgnoreCase("-p")) break;
+                    for (i++; i < args.length; i++) {
+                        String nextArg = args[i];
+                        if (nextArg.indexOf('-') == 0) {
+                            i--;
+                            break;
+                        }
 
                         pathBuilder.append(nextArg);
                     }
@@ -33,4 +37,6 @@ public class HttpServerMain {
         HttpServer server = new HttpServer(port, new File(path));
         server.start();
     }
+
+
 }

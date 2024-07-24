@@ -1,19 +1,18 @@
-package io.github.winnpixie.http4j.server.direction.incoming;
+package io.github.winnpixie.http4j.server.incoming;
 
-import io.github.winnpixie.http4j.server.direction.outgoing.HttpResponse;
-import io.github.winnpixie.http4j.shared.HttpResponseStatus;
-import io.github.winnpixie.http4j.server.direction.shared.HttpSocketHandler;
 import io.github.winnpixie.http4j.server.HttpServer;
+import io.github.winnpixie.http4j.server.outgoing.HttpResponse;
+import io.github.winnpixie.http4j.shared.HttpResponseStatus;
 
 import java.net.Socket;
 
 public class HttpRequestThread extends Thread {
     private final HttpServer server;
-    private final HttpSocketHandler socketHandler;
+    private final Socket socket;
 
     public HttpRequestThread(HttpServer server, Socket socket) {
         this.server = server;
-        this.socketHandler = new HttpSocketHandler(socket);
+        this.socket = socket;
 
         super.setName("http-srv_%s_%d".formatted(socket.getInetAddress(), System.nanoTime()));
     }
@@ -22,13 +21,13 @@ public class HttpRequestThread extends Thread {
         return server;
     }
 
-    public HttpSocketHandler getSocketHandler() {
-        return socketHandler;
+    public Socket getSocket() {
+        return socket;
     }
 
     @Override
     public void run() {
-        try (Socket sock = socketHandler.getSocket()) {
+        try (Socket sock = socket) {
             HttpRequest request = new HttpRequest(this);
             request.read();
 

@@ -5,7 +5,7 @@
 
     <groupId>io.github.winnpixie</groupId>
     <artifactId>http4j</artifactId>
-    <version>0.3.2-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>

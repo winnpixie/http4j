@@ -1,6 +1,6 @@
 package io.github.winnpixie.http4j.server;
 
-import io.github.winnpixie.http4j.server.direction.incoming.HttpRequestThread;
+import io.github.winnpixie.http4j.server.incoming.HttpRequestThread;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -16,7 +16,7 @@ public class HttpServerThread extends Thread {
     @Override
     public void run() {
         try (ServerSocket srvSocket = new ServerSocket(server.getPort())) {
-            server.getLogger().info("Http Server started at %s:%d"
+            server.getLogger().info("http4j (server) started at %s:%d"
                     .formatted(srvSocket.getInetAddress().getHostName(), srvSocket.getLocalPort()));
 
             while (server.isRunning()) {

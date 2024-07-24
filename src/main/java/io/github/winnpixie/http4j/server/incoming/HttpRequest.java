@@ -1,9 +1,6 @@
-package io.github.winnpixie.http4j.server.direction.incoming;
+package io.github.winnpixie.http4j.server.incoming;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -95,8 +92,8 @@ public class HttpRequest {
         return body;
     }
 
-    public void read() throws Exception {
-        InputStream is = requestThread.getSocketHandler().getInputStream();
+    public void read() throws IOException {
+        InputStream is = requestThread.getSocket().getInputStream();
         if (is == null) throw new RuntimeException("Unable to retrieve input stream.");
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));

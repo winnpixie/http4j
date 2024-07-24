@@ -1,6 +1,6 @@
 package io.github.winnpixie.http4j.server.endpoints;
 
-import io.github.winnpixie.http4j.server.direction.outgoing.HttpResponse;
+import io.github.winnpixie.http4j.server.outgoing.HttpResponse;
 
 import java.util.function.Consumer;
 
