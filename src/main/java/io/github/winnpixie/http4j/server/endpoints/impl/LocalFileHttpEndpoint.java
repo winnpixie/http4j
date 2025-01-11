@@ -1,7 +1,7 @@
 package io.github.winnpixie.http4j.server.endpoints.impl;
 
-import io.github.winnpixie.http4j.server.incoming.HttpRequest;
 import io.github.winnpixie.http4j.server.endpoints.HttpEndpoint;
+import io.github.winnpixie.http4j.server.incoming.HttpRequest;
 import io.github.winnpixie.http4j.shared.HttpResponseStatus;
 import io.github.winnpixie.http4j.shared.utilities.FileHelper;
 import io.github.winnpixie.http4j.shared.utilities.IOHelper;
@@ -10,6 +10,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 public class LocalFileHttpEndpoint extends HttpEndpoint {
     public LocalFileHttpEndpoint() {
@@ -41,6 +43,34 @@ public class LocalFileHttpEndpoint extends HttpEndpoint {
             } catch (IOException e) {
                 e.printStackTrace();
                 return; // TODO: Is this the correct approach?
+            }
+
+            if (file.getName().endsWith(".jhtml")) {
+                try (ByteArrayOutputStream bodyStream = response.getBody()) {
+                    StringBuilder bodyBuilder = new StringBuilder();
+
+                    // Create constants once
+                    final String clientAddr = request.getRequestThread().getSocket().getInetAddress().getHostAddress();
+                    final String userAgent = request.getHeader("User-Agent", false);
+                    final String httpMethod = request.getMethod().name();
+
+                    Files.readAllLines(file.toPath()).forEach(line ->
+                            bodyBuilder.append(line
+                                            .replace("%CLIENT_IP%", clientAddr)
+                                            .replace("%USER_AGENT%", userAgent)
+                                            .replace("%HTTP_METHOD%", httpMethod))
+                                    .append('\n'));
+
+                    bodyStream.writeBytes(bodyBuilder.toString().getBytes(StandardCharsets.UTF_8));
+
+                    response.setHeader("Content-Length", Integer.toString(bodyStream.size()));
+                    response.setHeader("Content-Type", "text/html");
+                    response.setStatus(HttpResponseStatus.OK);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                return;
             }
 
             try (ByteArrayOutputStream bodyStream = response.getBody()) {

@@ -40,8 +40,8 @@ public class HttpRequestThread extends Thread {
             response.write();
 
             server.getLogger().info("ip-addr=%s/x-fwd=%s path='%s' status-code=%d user-agent='%s'"
-                    .formatted(sock.getInetAddress(), request.getHeader("X-Forwarded-For", false), request.getPath(),
-                            response.getStatus().getCode(), request.getHeader("User-Agent", false)));
+                    .formatted(sock.getInetAddress().getHostAddress(), request.getHeader("X-Forwarded-For", false),
+                            request.getPath(), response.getStatus().getCode(), request.getHeader("User-Agent", false)));
         } catch (Exception e) {
             e.printStackTrace();
         }

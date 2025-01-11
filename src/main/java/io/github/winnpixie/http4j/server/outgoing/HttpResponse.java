@@ -85,7 +85,11 @@ public class HttpResponse {
         });
         os.write('\n');
 
+        if (body.size() == 0 && status.getCode() / 100 != 2) body.write("%d %s".formatted(status.getCode(),
+                status.getReasonPhrase()).getBytes(StandardCharsets.UTF_8));
+
         // HEAD = only headers get sent
-        if (!request.getMethod().equals(HttpMethod.HEAD)) os.write(this.body.toByteArray());
+        if (!request.getMethod().equals(HttpMethod.HEAD)) os.write(body.toByteArray());
+
     }
 }
