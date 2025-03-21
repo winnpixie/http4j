@@ -2,7 +2,7 @@ package io.github.winnpixie.http4j.server.endpoints.impl;
 
 import io.github.winnpixie.http4j.server.endpoints.HttpEndpoint;
 import io.github.winnpixie.http4j.server.incoming.HttpRequest;
-import io.github.winnpixie.http4j.shared.HttpResponseStatus;
+import io.github.winnpixie.http4j.shared.HttpStatus;
 import io.github.winnpixie.http4j.shared.utilities.FileHelper;
 import io.github.winnpixie.http4j.shared.utilities.IOHelper;
 
@@ -19,17 +19,21 @@ public class LocalFileHttpEndpoint extends HttpEndpoint {
             HttpRequest request = response.getRequest();
             String path = request.getPath().substring(1);
             File file = new File(request.getRequestThread().getServer().getRoot(), path);
+
+            // A file can not be a directory.
             if (!file.isDirectory() && path.endsWith("/")) {
-                response.setStatus(HttpResponseStatus.NOT_FOUND);
+                response.setStatus(HttpStatus.NOT_FOUND);
                 return;
             }
 
+            // Attempt to locate an index.html file when requested resource is a directory.
             if (file.isDirectory()) file = new File(file, "index.html");
             if (!file.exists()) {
-                response.setStatus(HttpResponseStatus.NOT_FOUND);
+                response.setStatus(HttpStatus.NOT_FOUND);
                 return;
             }
 
+            // Attempt to prevent escaping the root directory.
             try {
                 String canonicalPath = file.getCanonicalPath();
                 String canonicalRoot = request.getRequestThread().getServer().getRoot().getCanonicalPath();
@@ -37,7 +41,7 @@ public class LocalFileHttpEndpoint extends HttpEndpoint {
                     request.getRequestThread().getServer().getLogger()
                             .warning("Prevented read from file outside of server root!");
 
-                    response.setStatus(HttpResponseStatus.NOT_FOUND);
+                    response.setStatus(HttpStatus.NOT_FOUND);
                     return;
                 }
             } catch (IOException e) {
@@ -45,6 +49,7 @@ public class LocalFileHttpEndpoint extends HttpEndpoint {
                 return; // TODO: Is this the correct approach?
             }
 
+            // TODO: Custom file processor for server-side scripting.
             if (file.getName().endsWith(".jhtml")) {
                 try (ByteArrayOutputStream bodyStream = response.getBody()) {
                     StringBuilder bodyBuilder = new StringBuilder();
@@ -65,7 +70,7 @@ public class LocalFileHttpEndpoint extends HttpEndpoint {
 
                     response.setHeader("Content-Length", Integer.toString(bodyStream.size()));
                     response.setHeader("Content-Type", "text/html");
-                    response.setStatus(HttpResponseStatus.OK);
+                    response.setStatus(HttpStatus.OK);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -88,7 +93,7 @@ public class LocalFileHttpEndpoint extends HttpEndpoint {
                 if (mime.equals("application/octet-stream")) mime = FileHelper.guessMime(file.getName());
                 response.setHeader("Content-Type", mime);
 
-                response.setStatus(HttpResponseStatus.OK);
+                response.setStatus(HttpStatus.OK);
             } catch (IOException e) {
                 e.printStackTrace();
             }

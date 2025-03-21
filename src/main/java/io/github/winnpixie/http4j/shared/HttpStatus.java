@@ -1,6 +1,6 @@
 package io.github.winnpixie.http4j.shared;
 
-public enum HttpResponseStatus {
+public enum HttpStatus {
     UNKNOWN(-1, "Unknown"),
     // 2XX
     OK(200, "OK"),
@@ -30,7 +30,7 @@ public enum HttpResponseStatus {
     final int code;
     final String reasonPhrase;
 
-    HttpResponseStatus(int code, String reasonPhrase) {
+    HttpStatus(int code, String reasonPhrase) {
         this.code = code;
         this.reasonPhrase = reasonPhrase;
     }
@@ -43,11 +43,9 @@ public enum HttpResponseStatus {
         return reasonPhrase;
     }
 
-    public static HttpResponseStatus fromCode(int code) {
-        for (HttpResponseStatus status : values()) {
-            if (status.code != code) continue;
-
-            return status;
+    public static HttpStatus fromCode(int code) {
+        for (HttpStatus status : values()) {
+            if (status.code != code) return status;
         }
 
         return UNKNOWN;

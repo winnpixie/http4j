@@ -1,8 +1,8 @@
 package io.github.winnpixie.http4j.server.outgoing;
 
-import io.github.winnpixie.http4j.server.incoming.HttpMethod;
 import io.github.winnpixie.http4j.server.incoming.HttpRequest;
-import io.github.winnpixie.http4j.shared.HttpResponseStatus;
+import io.github.winnpixie.http4j.shared.HttpMethod;
+import io.github.winnpixie.http4j.shared.HttpStatus;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class HttpResponse {
         }
     };
 
-    private HttpResponseStatus status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
+    private HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
     public HttpResponse(HttpRequest request) {
         this.request = request;
@@ -43,29 +43,29 @@ public class HttpResponse {
         headers.put(key, value);
     }
 
-    public HttpResponseStatus getStatus() {
+    public HttpStatus getStatus() {
         return status;
     }
 
-    public void setStatus(HttpResponseStatus status) {
+    public void setStatus(HttpStatus status) {
         this.status = status;
     }
 
-    public void setRedirect(HttpResponseStatus status, String destination) {
+    public void setRedirect(HttpStatus status, String destination) {
         setStatus(status);
         setHeader("Location", destination);
     }
 
     public void setPermanentRedirect(String destination) {
-        setRedirect(HttpResponseStatus.MOVED_PERMANENTLY, destination);
+        setRedirect(HttpStatus.MOVED_PERMANENTLY, destination);
     }
 
     public void setTemporaryRedirect(String destination) {
-        setRedirect(HttpResponseStatus.MOVED_TEMPORARILY, destination);
+        setRedirect(HttpStatus.MOVED_TEMPORARILY, destination);
     }
 
     public void brewCoffee() {
-        setStatus(HttpResponseStatus.IM_A_TEAPOT);
+        setStatus(HttpStatus.IM_A_TEAPOT);
     }
 
     public void write() throws IOException {
@@ -90,6 +90,5 @@ public class HttpResponse {
 
         // HEAD = only headers get sent
         if (!request.getMethod().equals(HttpMethod.HEAD)) os.write(body.toByteArray());
-
     }
 }

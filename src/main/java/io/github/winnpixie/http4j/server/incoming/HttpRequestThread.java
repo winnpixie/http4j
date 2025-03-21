@@ -2,7 +2,7 @@ package io.github.winnpixie.http4j.server.incoming;
 
 import io.github.winnpixie.http4j.server.HttpServer;
 import io.github.winnpixie.http4j.server.outgoing.HttpResponse;
-import io.github.winnpixie.http4j.shared.HttpResponseStatus;
+import io.github.winnpixie.http4j.shared.HttpStatus;
 
 import java.net.Socket;
 
@@ -33,7 +33,7 @@ public class HttpRequestThread extends Thread {
 
             HttpResponse response = new HttpResponse(request);
             if (request.getHeader("Host", false).isEmpty() || request.getPath().indexOf('/') > 0) {
-                response.setStatus(HttpResponseStatus.BAD_REQUEST);
+                response.setStatus(HttpStatus.BAD_REQUEST);
             } else {
                 server.getEndpointManager().getEndpoint(request.getPath()).getHandler().accept(response);
             }

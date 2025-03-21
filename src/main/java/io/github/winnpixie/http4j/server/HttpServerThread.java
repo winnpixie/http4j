@@ -21,7 +21,7 @@ public class HttpServerThread extends Thread {
 
             while (server.isRunning()) {
                 Socket socket = srvSocket.accept();
-                socket.setSoTimeout(15000);
+                socket.setSoTimeout(60000);
 
                 new HttpRequestThread(server, socket).start();
             }

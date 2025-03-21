@@ -5,11 +5,11 @@
 
     <groupId>io.github.winnpixie</groupId>
     <artifactId>http4j</artifactId>
-    <version>0.4-SNAPSHOT</version>
+    <version>0.5-DEV</version>
 
     <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <build>
@@ -17,10 +17,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.4.1</version>
                 <configuration>
                     <archive>
-                        <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+                        <manifest>
+                            <mainClass>io.github.winnpixie.http4j.server.HttpServerMain</mainClass>
+                        </manifest>
                     </archive>
                 </configuration>
             </plugin>

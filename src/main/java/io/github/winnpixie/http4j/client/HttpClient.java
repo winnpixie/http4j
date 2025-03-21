@@ -1,5 +1,13 @@
 package io.github.winnpixie.http4j.client;
 
+import io.github.winnpixie.http4j.shared.HttpMethod;
+import io.github.winnpixie.http4j.shared.HttpStatus;
+import io.github.winnpixie.http4j.shared.utilities.IOHelper;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
@@ -29,6 +37,10 @@ public class HttpClient {
         request.setMethod(method);
 
         return this;
+    }
+
+    public HttpClient setMethod(String methodVerb) {
+        return setMethod(HttpMethod.from(methodVerb));
     }
 
     public HttpClient setUrl(URL url) {
@@ -104,6 +116,32 @@ public class HttpClient {
     }
 
     public void send() {
-        request.getMethod().getSendFunction().accept(request);
+        HttpURLConnection conn = null;
+        try {
+            conn = (HttpURLConnection) request.getUrl().openConnection(request.getProxy());
+            conn.setRequestMethod(request.getMethod().name());
+            conn.setInstanceFollowRedirects(request.isFollowRedirects());
+            request.getHeaders().forEach(conn::setRequestProperty);
+
+            if (request.getMethod().equals(HttpMethod.PUT) || request.getMethod().equals(HttpMethod.POST)) {
+                conn.setRequestProperty("Content-Length", Integer.toString(request.getBody().length));
+
+                try (OutputStream os = conn.getOutputStream()) {
+                    os.write(request.getBody());
+                    os.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            try (InputStream is = conn.getInputStream()) {
+                request.getOnSuccess().accept(new HttpResponse(request, HttpStatus.fromCode(conn.getResponseCode()),
+                        IOHelper.toByteArray(is), conn.getHeaderFields()));
+            }
+        } catch (Exception e) {
+            request.getOnFailure().accept(e);
+        } finally {
+            if (conn != null) conn.disconnect();
+        }
     }
 }

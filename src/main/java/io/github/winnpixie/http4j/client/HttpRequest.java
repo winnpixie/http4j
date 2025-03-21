@@ -1,5 +1,7 @@
 package io.github.winnpixie.http4j.client;
 
+import io.github.winnpixie.http4j.shared.HttpMethod;
+
 import java.net.Proxy;
 import java.net.URL;
 import java.util.HashMap;

@@ -1,5 +1,8 @@
 package io.github.winnpixie.http4j.server.incoming;
 
+
+import io.github.winnpixie.http4j.shared.HttpMethod;
+
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +16,8 @@ public class HttpRequest {
     private String protocol;
     private Map<String, String> headers;
     private byte[] body;
+
+    private Map<String, String> queryCache;
 
     public HttpRequest(HttpRequestThread requestThread) {
         this.requestThread = requestThread;
@@ -41,31 +46,27 @@ public class HttpRequest {
         return query;
     }
 
-    public String getQuery(String key, boolean exact) {
-        String[] entries = this.query.split("&");
-
-        for (String entry : entries) {
-            String[] pair = entry.split("=", 2);
-
-            if (!pair[0].equals(key) && exact) continue;
-            if (!pair[0].equalsIgnoreCase(key)) continue;
-
-            return pair.length > 1 ? pair[1] : "";
+    public String getQuery(String key, boolean caseSensitive) {
+        for (Map.Entry<String, String> query : getQueries().entrySet()) {
+            if (query.getKey().equals(key)) return query.getValue();
+            if (!caseSensitive && query.getKey().equalsIgnoreCase(key)) return query.getValue();
         }
 
         return "";
     }
 
     public Map<String, String> getQueries() {
-        Map<String, String> queries = new HashMap<>();
-        String[] entries = this.query.split("&");
+        if (queryCache == null) {
+            queryCache = new HashMap<>();
+            String[] entries = this.query.split("&");
 
-        for (String entry : entries) {
-            String[] pair = entry.split("=", 2);
-            queries.put(pair[0], pair.length > 1 ? pair[1] : "");
+            for (String entry : entries) {
+                String[] pair = entry.split("=", 2);
+                queryCache.put(pair[0], pair.length > 1 ? pair[1] : "");
+            }
         }
 
-        return queries;
+        return queryCache;
     }
 
     public String getProtocol() {
@@ -98,7 +99,7 @@ public class HttpRequest {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         String[] httpHeader = reader.readLine().split(" ");
-        this.method = HttpMethod.fromName(httpHeader[0]);
+        this.method = HttpMethod.from(httpHeader[0]);
         this.path = httpHeader[1];
 
         int queryIdx = path.indexOf('?');
@@ -110,7 +111,7 @@ public class HttpRequest {
         this.protocol = httpHeader[2];
 
         this.headers = new HashMap<>();
-        String headerLine = "";
+        String headerLine;
         while ((headerLine = reader.readLine()) != null && headerLine.indexOf(':') > 0) {
             String[] header = headerLine.split(":", 2);
             headers.put(header[0], header[1].indexOf(' ') == 0 ? header[1].substring(1) : header[1]);
