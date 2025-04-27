@@ -6,20 +6,14 @@ import java.net.Proxy;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
-public class HttpRequest {
+public class Request {
     private HttpMethod method = HttpMethod.GET;
     private URL url;
     private Map<String, String> headers = new HashMap<>();
     private Proxy proxy = Proxy.NO_PROXY;
     private byte[] body;
     private boolean followRedirects;
-
-    private Consumer<HttpResponse> onSuccess = response -> {
-    };
-    private Consumer<Throwable> onFailure = exception -> {
-    };
 
     public HttpMethod getMethod() {
         return method;
@@ -67,21 +61,5 @@ public class HttpRequest {
 
     public void setFollowRedirects(boolean followRedirects) {
         this.followRedirects = followRedirects;
-    }
-
-    public Consumer<HttpResponse> getOnSuccess() {
-        return onSuccess;
-    }
-
-    public void setOnSuccess(Consumer<HttpResponse> onSuccess) {
-        this.onSuccess = onSuccess;
-    }
-
-    public Consumer<Throwable> getOnFailure() {
-        return onFailure;
-    }
-
-    public void setOnFailure(Consumer<Throwable> onFailure) {
-        this.onFailure = onFailure;
     }
 }

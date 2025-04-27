@@ -1,22 +1,22 @@
 package io.github.winnpixie.http4j.server.endpoints.impl;
 
-import io.github.winnpixie.http4j.server.endpoints.HttpEndpoint;
-import io.github.winnpixie.http4j.server.incoming.HttpRequest;
-import io.github.winnpixie.http4j.server.outgoing.HttpResponse;
+import io.github.winnpixie.http4j.server.endpoints.RequestHandler;
+import io.github.winnpixie.http4j.server.incoming.Request;
+import io.github.winnpixie.http4j.server.outgoing.Response;
 import io.github.winnpixie.http4j.shared.HttpStatus;
 import io.github.winnpixie.http4j.shared.utilities.FileHelper;
-import io.github.winnpixie.http4j.shared.utilities.IOHelper;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
-public class FileHttpEndpoint extends HttpEndpoint {
+public class FileRequestHandler extends RequestHandler {
     private Path root;
 
-    public FileHttpEndpoint() {
+    public FileRequestHandler() {
         super("/");
     }
 
@@ -29,8 +29,8 @@ public class FileHttpEndpoint extends HttpEndpoint {
     }
 
     @Override
-    public void handle(HttpResponse response) {
-        HttpRequest request = response.getRequest();
+    public Response process(Request request) {
+        Response response = new Response();
         String pathStr = request.getPath().substring(1);
         Path path = root.resolve(pathStr);
 
@@ -38,40 +38,43 @@ public class FileHttpEndpoint extends HttpEndpoint {
         boolean isDir = Files.isDirectory(path);
         if (!isDir && pathStr.endsWith("/")) {
             response.setStatus(HttpStatus.NOT_FOUND);
-            return;
+            return response;
         }
 
         // Attempt to locate an index.html file if requested resource is a directory.
         if (isDir) path = path.resolve("index.html");
         if (Files.notExists(path)) {
             response.setStatus(HttpStatus.NOT_FOUND);
-            return;
+            return response;
         }
 
         // Attempt to prevent escaping the root directory.
         Path normalizedPath = path.toAbsolutePath().normalize();
         Path normalizedRoot = root.toAbsolutePath().normalize();
         if (!normalizedPath.startsWith(normalizedRoot)) {
-            request.getRequestThread().getServer().getLogger()
+            request.getServer().getLogger()
                     .warning("Prevented read from path outside of root!");
 
             response.setStatus(HttpStatus.NOT_FOUND);
-            return;
+            return response;
         }
 
-        try (ByteArrayOutputStream bodyStream = response.getBody();
-             ByteArrayInputStream byteStream = new ByteArrayInputStream(Files.readAllBytes(path))) {
-            IOHelper.transfer(byteStream, bodyStream);
-            response.setHeader("Content-Length", Integer.toString(bodyStream.size()));
+        try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
+            int fileSize = (int) channel.size();
+            ByteBuffer fileBuffer = ByteBuffer.allocate(fileSize);
+            channel.read(fileBuffer);
 
-            byteStream.reset();
-            String mime = FileHelper.guessMime(byteStream);
-            if (mime.equals("application/octet-stream")) mime = FileHelper.guessMime(path.toString());
-            response.setHeader("Content-Type", mime);
+            response.setBody(fileBuffer.flip().array());
+
+            response.setHeader("Content-Type", FileHelper.getContentType(path.toString()));
+            response.setHeader("Content-Length", Integer.toString(fileSize));
 
             response.setStatus(HttpStatus.OK);
+            return response;
         } catch (IOException ex) {
             ex.printStackTrace();
+
+            return response;
         }
     }
 }

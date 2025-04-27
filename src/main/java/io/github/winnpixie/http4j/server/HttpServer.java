@@ -1,6 +1,6 @@
 package io.github.winnpixie.http4j.server;
 
-import io.github.winnpixie.http4j.server.endpoints.HttpEndpointManager;
+import io.github.winnpixie.http4j.server.endpoints.RequestHandlers;
 
 import java.util.logging.Logger;
 
@@ -9,7 +9,7 @@ public class HttpServer {
     private final Logger logger = Logger.getLogger(HttpServer.class.getName());
     private int port;
     private boolean running;
-    private final HttpEndpointManager endpointManager = new HttpEndpointManager();
+    private final RequestHandlers requestHandlers = new RequestHandlers();
     private final HttpServerThread serverThread;
 
     public HttpServer(int port) {
@@ -36,8 +36,8 @@ public class HttpServer {
         return running;
     }
 
-    public HttpEndpointManager getEndpointManager() {
-        return endpointManager;
+    public RequestHandlers getRequestHandlers() {
+        return requestHandlers;
     }
 
     public void start() {

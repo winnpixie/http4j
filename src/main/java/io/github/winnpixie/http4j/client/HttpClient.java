@@ -11,10 +11,9 @@ import java.net.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.function.Consumer;
 
 public class HttpClient {
-    private HttpRequest request;
+    private Request request;
 
     private HttpClient() {
         newRequest();
@@ -25,7 +24,7 @@ public class HttpClient {
     }
 
     public HttpClient newRequest() {
-        request = new HttpRequest();
+        request = new Request();
 
         return addHeader("User-Agent", "winnpixie/http4j (client)");
     }
@@ -109,19 +108,7 @@ public class HttpClient {
         return this;
     }
 
-    public HttpClient onSuccess(Consumer<HttpResponse> onSuccess) {
-        request.setOnSuccess(onSuccess);
-
-        return this;
-    }
-
-    public HttpClient onFailure(Consumer<Throwable> onFailure) {
-        request.setOnFailure(onFailure);
-
-        return this;
-    }
-
-    public void send() {
+    public Response send() throws IOException {
         HttpURLConnection conn = null;
         try {
             conn = (HttpURLConnection) request.getUrl().openConnection(request.getProxy());
@@ -135,17 +122,13 @@ public class HttpClient {
                 try (OutputStream os = conn.getOutputStream()) {
                     os.write(request.getBody());
                     os.flush();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
                 }
             }
 
             try (InputStream is = conn.getInputStream()) {
-                request.getOnSuccess().accept(new HttpResponse(request, HttpStatus.fromCode(conn.getResponseCode()),
-                        IOHelper.toByteArray(is), conn.getHeaderFields()));
+                return new Response(request, HttpStatus.fromCode(conn.getResponseCode()),
+                        IOHelper.toByteArray(is), conn.getHeaderFields());
             }
-        } catch (Exception ex) {
-            request.getOnFailure().accept(ex);
         } finally {
             if (conn != null) conn.disconnect();
         }

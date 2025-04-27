@@ -6,30 +6,30 @@ import java.net.URLConnection;
 import java.util.Properties;
 
 public class FileHelper {
-    public static final String DEFAULT_MIME = "application/octet-stream";
-    public static final Properties CUSTOM_MIMES;
+    public static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
+    public static final Properties KNOWN_CONTENT_TYPES;
 
     static {
-        CUSTOM_MIMES = new Properties();
+        KNOWN_CONTENT_TYPES = new Properties();
 
         try {
-            CUSTOM_MIMES.load(FileHelper.class.getResourceAsStream("/mimes.properties"));
+            KNOWN_CONTENT_TYPES.load(FileHelper.class.getResourceAsStream("/content-types.properties"));
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
-    public static String guessMime(String fileName) {
-        String type = URLConnection.guessContentTypeFromName(fileName);
+    public static String getContentType(String fileName) {
+        String guess = URLConnection.guessContentTypeFromName(fileName);
+        if (guess != null) return guess;
 
         int extIdx = fileName.lastIndexOf('.');
-        if (type == null && extIdx < 0 || extIdx + 1 == fileName.length()) return DEFAULT_MIME;
-        if (type == null) return CUSTOM_MIMES.getProperty(fileName.substring(extIdx + 1).toLowerCase(), DEFAULT_MIME);
+        if (extIdx < 0 || extIdx + 1 == fileName.length()) return DEFAULT_CONTENT_TYPE;
 
-        return type;
+        return KNOWN_CONTENT_TYPES.getProperty(fileName.substring(extIdx + 1).toLowerCase(), DEFAULT_CONTENT_TYPE);
     }
 
-    public static String guessMime(InputStream input) {
+    public static String getContentType(InputStream input) {
         try {
             String type = URLConnection.guessContentTypeFromStream(input);
             if (type != null) return type;
@@ -37,6 +37,6 @@ public class FileHelper {
             ex.printStackTrace();
         }
 
-        return DEFAULT_MIME;
+        return DEFAULT_CONTENT_TYPE;
     }
 }

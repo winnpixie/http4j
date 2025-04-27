@@ -35,7 +35,7 @@ public class HttpServerMain {
         }
 
         HttpServer server = new HttpServer(port);
-        server.getEndpointManager().getDefaultEndpoint().setRoot(Paths.get(root));
+        server.getRequestHandlers().getDefaultHandler().setRoot(Paths.get(root));
         server.start();
     }
 }
