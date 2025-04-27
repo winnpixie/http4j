@@ -14,8 +14,8 @@ public class FileHelper {
 
         try {
             CUSTOM_MIMES.load(FileHelper.class.getResourceAsStream("/mimes.properties"));
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -33,8 +33,8 @@ public class FileHelper {
         try {
             String type = URLConnection.guessContentTypeFromStream(input);
             if (type != null) return type;
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
 
         return DEFAULT_MIME;

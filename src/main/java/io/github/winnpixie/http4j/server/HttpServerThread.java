@@ -10,6 +10,8 @@ public class HttpServerThread extends Thread {
     private final HttpServer server;
 
     public HttpServerThread(HttpServer server) {
+        super("http4j_server");
+
         this.server = server;
     }
 
@@ -25,8 +27,8 @@ public class HttpServerThread extends Thread {
 
                 new HttpRequestThread(server, socket).start();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 }

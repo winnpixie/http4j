@@ -7,10 +7,7 @@ import io.github.winnpixie.http4j.shared.utilities.IOHelper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.Proxy;
-import java.net.URL;
+import java.net.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -39,8 +36,8 @@ public class HttpClient {
         return this;
     }
 
-    public HttpClient setMethod(String methodVerb) {
-        return setMethod(HttpMethod.from(methodVerb));
+    public HttpClient setMethod(String method) {
+        return setMethod(HttpMethod.from(method));
     }
 
     public HttpClient setUrl(URL url) {
@@ -49,9 +46,18 @@ public class HttpClient {
         return this;
     }
 
+    public HttpClient setUrl(URI uri) {
+        try {
+            return setUrl(uri.toURL());
+        } catch (MalformedURLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+
     public HttpClient setUrl(String url) {
         try {
-            return setUrl(new URL(url));
+            return setUrl(URI.create(url).toURL());
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
@@ -109,7 +115,7 @@ public class HttpClient {
         return this;
     }
 
-    public HttpClient onFailure(Consumer<Exception> onFailure) {
+    public HttpClient onFailure(Consumer<Throwable> onFailure) {
         request.setOnFailure(onFailure);
 
         return this;
@@ -129,8 +135,8 @@ public class HttpClient {
                 try (OutputStream os = conn.getOutputStream()) {
                     os.write(request.getBody());
                     os.flush();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
             }
 
@@ -138,8 +144,8 @@ public class HttpClient {
                 request.getOnSuccess().accept(new HttpResponse(request, HttpStatus.fromCode(conn.getResponseCode()),
                         IOHelper.toByteArray(is), conn.getHeaderFields()));
             }
-        } catch (Exception e) {
-            request.getOnFailure().accept(e);
+        } catch (Exception ex) {
+            request.getOnFailure().accept(ex);
         } finally {
             if (conn != null) conn.disconnect();
         }

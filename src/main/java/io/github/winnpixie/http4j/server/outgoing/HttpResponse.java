@@ -79,8 +79,8 @@ public class HttpResponse {
         headers.forEach((key, value) -> {
             try {
                 os.write("%s: %s\n".formatted(key, value).getBytes(StandardCharsets.UTF_8));
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         });
         os.write('\n');

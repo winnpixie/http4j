@@ -18,7 +18,7 @@ public class HttpRequest {
 
     private Consumer<HttpResponse> onSuccess = response -> {
     };
-    private Consumer<Exception> onFailure = exception -> {
+    private Consumer<Throwable> onFailure = exception -> {
     };
 
     public HttpMethod getMethod() {
@@ -77,11 +77,11 @@ public class HttpRequest {
         this.onSuccess = onSuccess;
     }
 
-    public Consumer<Exception> getOnFailure() {
+    public Consumer<Throwable> getOnFailure() {
         return onFailure;
     }
 
-    public void setOnFailure(Consumer<Exception> onFailure) {
+    public void setOnFailure(Consumer<Throwable> onFailure) {
         this.onFailure = onFailure;
     }
 }

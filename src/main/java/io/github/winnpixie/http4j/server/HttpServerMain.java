@@ -1,11 +1,11 @@
 package io.github.winnpixie.http4j.server;
 
-import java.io.File;
+import java.nio.file.Paths;
 
 public class HttpServerMain {
     public static void main(String[] args) {
         int port = 8080;
-        String path = "www";
+        String root = "www";
 
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
@@ -29,14 +29,13 @@ public class HttpServerMain {
                         pathBuilder.append(nextArg);
                     }
 
-                    path = pathBuilder.toString();
+                    root = pathBuilder.toString();
                     break;
             }
         }
 
-        HttpServer server = new HttpServer(port, new File(path));
+        HttpServer server = new HttpServer(port);
+        server.getEndpointManager().getDefaultEndpoint().setRoot(Paths.get(root));
         server.start();
     }
-
-
 }
