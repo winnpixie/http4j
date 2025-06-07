@@ -1,6 +1,6 @@
-package io.github.winnpixie.http4j.client;
+package io.github.foss4j.http4j.client;
 
-import io.github.winnpixie.http4j.shared.HttpStatus;
+import io.github.foss4j.http4j.shared.HttpStatus;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;

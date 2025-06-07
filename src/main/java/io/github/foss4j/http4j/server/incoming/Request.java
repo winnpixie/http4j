@@ -1,8 +1,8 @@
-package io.github.winnpixie.http4j.server.incoming;
+package io.github.foss4j.http4j.server.incoming;
 
 
-import io.github.winnpixie.http4j.server.HttpServer;
-import io.github.winnpixie.http4j.shared.HttpMethod;
+import io.github.foss4j.http4j.server.HttpServer;
+import io.github.foss4j.http4j.shared.HttpMethod;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

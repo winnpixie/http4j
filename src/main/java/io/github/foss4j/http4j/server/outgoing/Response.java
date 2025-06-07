@@ -1,6 +1,6 @@
-package io.github.winnpixie.http4j.server.outgoing;
+package io.github.foss4j.http4j.server.outgoing;
 
-import io.github.winnpixie.http4j.shared.HttpStatus;
+import io.github.foss4j.http4j.shared.HttpStatus;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +12,7 @@ public class Response {
 
     public Response() {
         headers.put("Connection", "close");
-        headers.put("Server", "winnpixie/http4j (server)");
+        headers.put("Server", "foss4j/http4j (server)");
     }
 
     public HttpStatus getStatus() {

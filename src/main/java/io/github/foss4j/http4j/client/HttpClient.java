@@ -1,8 +1,8 @@
-package io.github.winnpixie.http4j.client;
+package io.github.foss4j.http4j.client;
 
-import io.github.winnpixie.http4j.shared.HttpMethod;
-import io.github.winnpixie.http4j.shared.HttpStatus;
-import io.github.winnpixie.http4j.shared.utilities.IOHelper;
+import io.github.foss4j.http4j.shared.HttpMethod;
+import io.github.foss4j.http4j.shared.HttpStatus;
+import io.github.foss4j.http4j.shared.utilities.IOHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +26,7 @@ public class HttpClient {
     public HttpClient newRequest() {
         request = new Request();
 
-        return addHeader("User-Agent", "winnpixie/http4j (client)");
+        return addHeader("User-Agent", "foss4j/http4j (client)");
     }
 
     public HttpClient setMethod(HttpMethod method) {

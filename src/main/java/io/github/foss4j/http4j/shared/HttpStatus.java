@@ -1,4 +1,4 @@
-package io.github.winnpixie.http4j.shared;
+package io.github.foss4j.http4j.shared;
 
 public enum HttpStatus {
     UNKNOWN(-1, "Unknown"),

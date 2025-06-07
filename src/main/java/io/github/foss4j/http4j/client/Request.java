@@ -1,6 +1,6 @@
-package io.github.winnpixie.http4j.client;
+package io.github.foss4j.http4j.client;
 
-import io.github.winnpixie.http4j.shared.HttpMethod;
+import io.github.foss4j.http4j.shared.HttpMethod;
 
 import java.net.Proxy;
 import java.net.URL;
