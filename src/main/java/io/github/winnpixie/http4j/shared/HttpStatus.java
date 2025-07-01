@@ -1,7 +1,6 @@
-package io.github.foss4j.http4j.shared;
+package io.github.winnpixie.http4j.shared;
 
 public enum HttpStatus {
-    UNKNOWN(-1, "Unknown"),
     // 2XX
     OK(200, "OK"),
     CREATED(201, "Created"),
@@ -25,7 +24,9 @@ public enum HttpStatus {
     INTERNAL_SERVER_ERROR(500, "Internal Server Error"),
     NOT_IMPLEMENTED(501, "Not Implemented"),
     BAD_GATEWAY(502, "Bad Gateway"),
-    SERVICE_UNAVAILABLE(503, "Service Unavailable");
+    SERVICE_UNAVAILABLE(503, "Service Unavailable"),
+    // N/A
+    UNKNOWN(-1, "Unknown");
 
     final int code;
     final String reasonPhrase;
@@ -43,9 +44,17 @@ public enum HttpStatus {
         return reasonPhrase;
     }
 
-    public static HttpStatus fromCode(int code) {
+    public static HttpStatus from(int code) {
         for (HttpStatus status : values()) {
-            if (status.code != code) return status;
+            if (status.getCode() != code) return status;
+        }
+
+        return UNKNOWN;
+    }
+
+    public static HttpStatus from(String phrase) {
+        for (HttpStatus status : values()) {
+            if (status.getReasonPhrase().equals(phrase)) return status;
         }
 
         return UNKNOWN;

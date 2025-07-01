@@ -1,8 +1,8 @@
-package io.github.foss4j.http4j.server.incoming;
+package io.github.winnpixie.http4j.server.incoming;
 
 
-import io.github.foss4j.http4j.server.HttpServer;
-import io.github.foss4j.http4j.shared.HttpMethod;
+import io.github.winnpixie.http4j.server.HttpServer;
+import io.github.winnpixie.http4j.shared.HttpMethod;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -49,9 +49,9 @@ public class Request {
     }
 
     public String getQuery(String key, boolean caseSensitive) {
-        for (Map.Entry<String, String> query : getQueries().entrySet()) {
-            if (query.getKey().equals(key)) return query.getValue();
-            if (!caseSensitive && query.getKey().equalsIgnoreCase(key)) return query.getValue();
+        for (Map.Entry<String, String> entry : getQueries().entrySet()) {
+            if (entry.getKey().equals(key)) return entry.getValue();
+            if (!caseSensitive && entry.getKey().equalsIgnoreCase(key)) return entry.getValue();
         }
 
         return "";
@@ -95,7 +95,7 @@ public class Request {
         return body;
     }
 
-    public boolean read() throws IOException {
+    public void read() throws IOException {
         ByteBuffer bufferIn = ByteBuffer.allocate(65536);
         // TODO: Use eventually?
         int bytesRead = channel.read(bufferIn);
@@ -104,8 +104,6 @@ public class Request {
         if (!readHead(bufferIn)) throw new IOException("Malformed HTTP Head Line");
         readHeaders(bufferIn);
         readContent(bufferIn);
-
-        return true;
     }
 
     private boolean readHead(ByteBuffer bufferIn) {
@@ -131,8 +129,10 @@ public class Request {
         this.headers = new HashMap<>();
 
         String headerLine;
-        while ((headerLine = readLine(bufferIn)) != null && headerLine.indexOf(':') > 0) {
+        while ((headerLine = readLine(bufferIn)) != null) {
             String[] header = headerLine.split(":", 2);
+            if (header.length < 2) break;
+
             headers.put(header[0], header[1].indexOf(' ') == 0 ? header[1].substring(1) : header[1]);
         }
     }
@@ -162,9 +162,10 @@ public class Request {
         int ch;
         while ((ch = readByte(buf)) != -1) {
             if (ch == '\n') {
-                if (!builder.isEmpty() && builder.charAt(builder.length() - 1) == '\r') {
+                if (builder.length() > 0 && builder.charAt(builder.length() - 1) == '\r') {
                     builder.deleteCharAt(builder.length() - 1);
                 }
+
                 break;
             }
 

@@ -1,7 +1,7 @@
-package io.github.foss4j.http4j.server.endpoints;
+package io.github.winnpixie.http4j.server.endpoints;
 
-import io.github.foss4j.http4j.server.incoming.Request;
-import io.github.foss4j.http4j.server.outgoing.Response;
+import io.github.winnpixie.http4j.server.incoming.Request;
+import io.github.winnpixie.http4j.server.outgoing.Response;
 
 import java.io.IOException;
 

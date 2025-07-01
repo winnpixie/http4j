@@ -1,22 +1,26 @@
-package io.github.foss4j.http4j.shared.utilities;
+package io.github.winnpixie.http4j.shared.utilities;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FileHelper {
     public static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
-    public static final Properties KNOWN_CONTENT_TYPES;
+
+    private static final Properties KNOWN_CONTENT_TYPES = new Properties();
 
     static {
-        KNOWN_CONTENT_TYPES = new Properties();
-
         try {
             KNOWN_CONTENT_TYPES.load(FileHelper.class.getResourceAsStream("/content-types.properties"));
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (IOException ioe) {
+            Logger.getGlobal().log(Level.WARNING, "Error retrieving built-in Content-Type map", ioe);
         }
+    }
+
+    private FileHelper() {
     }
 
     public static String getContentType(String fileName) {
@@ -31,10 +35,10 @@ public class FileHelper {
 
     public static String getContentType(InputStream input) {
         try {
-            String type = URLConnection.guessContentTypeFromStream(input);
-            if (type != null) return type;
-        } catch (IOException ex) {
-            ex.printStackTrace();
+            String guess = URLConnection.guessContentTypeFromStream(input);
+            if (guess != null) return guess;
+        } catch (IOException ignored) {
+            //  return the default type on exception.
         }
 
         return DEFAULT_CONTENT_TYPE;

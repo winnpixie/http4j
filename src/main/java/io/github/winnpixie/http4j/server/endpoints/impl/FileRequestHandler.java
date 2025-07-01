@@ -1,10 +1,10 @@
-package io.github.foss4j.http4j.server.endpoints.impl;
+package io.github.winnpixie.http4j.server.endpoints.impl;
 
-import io.github.foss4j.http4j.server.endpoints.RequestHandler;
-import io.github.foss4j.http4j.server.incoming.Request;
-import io.github.foss4j.http4j.server.outgoing.Response;
-import io.github.foss4j.http4j.shared.HttpStatus;
-import io.github.foss4j.http4j.shared.utilities.FileHelper;
+import io.github.winnpixie.http4j.server.endpoints.RequestHandler;
+import io.github.winnpixie.http4j.server.incoming.Request;
+import io.github.winnpixie.http4j.server.outgoing.Response;
+import io.github.winnpixie.http4j.shared.HttpStatus;
+import io.github.winnpixie.http4j.shared.utilities.FileHelper;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -12,6 +12,7 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.logging.Level;
 
 public class FileRequestHandler extends RequestHandler {
     private Path root;
@@ -64,15 +65,15 @@ public class FileRequestHandler extends RequestHandler {
             ByteBuffer fileBuffer = ByteBuffer.allocate(fileSize);
             channel.read(fileBuffer);
 
-            response.setBody(fileBuffer.flip().array());
+            response.setBody((byte[]) fileBuffer.flip().array());
 
             response.setHeader("Content-Type", FileHelper.getContentType(path.toString()));
             response.setHeader("Content-Length", Integer.toString(fileSize));
 
             response.setStatus(HttpStatus.OK);
             return response;
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (IOException ioe) {
+            request.getServer().getLogger().log(Level.WARNING, "Error writing request", ioe);
 
             return response;
         }

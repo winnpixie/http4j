@@ -1,16 +1,18 @@
-package io.github.foss4j.http4j.server;
+package io.github.winnpixie.http4j.server;
 
-import io.github.foss4j.http4j.server.endpoints.RequestHandlers;
+import io.github.winnpixie.http4j.server.endpoints.RequestHandlers;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class HttpServer {
     // TODO: Create a custom logger implementation so as to not produce extraneous output.
     private final Logger logger = Logger.getLogger(HttpServer.class.getName());
-    private int port;
-    private boolean running;
     private final RequestHandlers requestHandlers = new RequestHandlers();
     private final HttpServerThread serverThread;
+
+    private int port;
+    private boolean running;
 
     public HttpServer(int port) {
         this.port = port;
@@ -27,7 +29,7 @@ public class HttpServer {
     }
 
     public void setPort(int port) {
-        if (running) throw new RuntimeException("Can not change port while server is running.");
+        if (running) throw new IllegalStateException("Can not change port while server is running.");
 
         this.port = port;
     }
@@ -51,8 +53,8 @@ public class HttpServer {
 
         try {
             serverThread.join();
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
+        } catch (InterruptedException ie) {
+            logger.log(Level.SEVERE, "An error occurred while stopping the server.", ie);
         }
     }
 }
