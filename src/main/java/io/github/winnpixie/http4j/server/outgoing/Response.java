@@ -61,8 +61,8 @@ public class Response {
     }
 
     public void write(SocketChannel channel, boolean writeBody) throws IOException {
-        StringBuilder head = new StringBuilder("HTTP/1.1")
-                .append(status.getCode())
+        StringBuilder head = new StringBuilder("HTTP/1.1 ")
+                .append(status.getCode()).append(' ')
                 .append(status.getReasonPhrase())
                 .append('\n');
 
