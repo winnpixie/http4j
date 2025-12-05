@@ -1,12 +1,11 @@
 package io.github.winnpixie.http4j.server;
 
-import io.github.winnpixie.http4j.server.endpoints.RequestHandlers;
+import io.github.winnpixie.http4j.server.incoming.RequestHandlers;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class HttpServer {
-    // TODO: Create a custom logger implementation so as to not produce extraneous output.
     private final Logger logger = Logger.getLogger(HttpServer.class.getName());
     private final RequestHandlers requestHandlers = new RequestHandlers();
     private final HttpServerThread serverThread;
@@ -29,7 +28,9 @@ public class HttpServer {
     }
 
     public void setPort(int port) {
-        if (running) throw new IllegalStateException("Can not change port while server is running.");
+        if (running) {
+            throw new IllegalStateException("Cannot set port while running.");
+        }
 
         this.port = port;
     }
@@ -54,7 +55,9 @@ public class HttpServer {
         try {
             serverThread.join();
         } catch (InterruptedException ie) {
-            logger.log(Level.SEVERE, "An error occurred while stopping the server.", ie);
+            logger.log(Level.SEVERE, "Error waiting for thread to finish.", ie);
+
+            serverThread.interrupt();
         }
     }
 }

@@ -5,7 +5,7 @@
 
     <groupId>io.github.foss4j</groupId>
     <artifactId>http4j</artifactId>
-    <version>0.7.1</version>
+    <version>0.8</version>
 
     <properties>
         <javac.version>1.8</javac.version>
@@ -23,7 +23,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>io.github.winnpixie.http4j.server.program.Http4JServerProgram</mainClass>
+                            <mainClass>io.github.winnpixie.http4j.program.Http4JDemo</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

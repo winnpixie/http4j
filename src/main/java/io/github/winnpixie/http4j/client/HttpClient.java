@@ -1,7 +1,9 @@
 package io.github.winnpixie.http4j.client;
 
+import io.github.winnpixie.http4j.shared.utilities.Constants;
+
 public class HttpClient {
-    private HttpClient() {
+    HttpClient() {
     }
 
     public static HttpClient newClient() {
@@ -9,9 +11,7 @@ public class HttpClient {
     }
 
     public Request.Builder newRequest() {
-        Request.Builder builder = new Request.Builder();
-        builder.setHeader("User-Agent", "http4j (client)");
-
-        return builder;
+        return new Request.Builder()
+                .setHeader("User-Agent", Constants.CLIENT_ID);
     }
 }

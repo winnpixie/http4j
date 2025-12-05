@@ -1,6 +1,6 @@
-package io.github.winnpixie.http4j.server.endpoints;
+package io.github.winnpixie.http4j.server.incoming;
 
-import io.github.winnpixie.http4j.server.endpoints.impl.FileRequestHandler;
+import io.github.winnpixie.http4j.server.incoming.impl.FileRequestHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,17 +17,19 @@ public class RequestHandlers {
         return handlers;
     }
 
-    public boolean register(RequestHandler handler) {
+    public boolean add(RequestHandler handler) {
         return handlers.add(handler);
     }
 
-    public boolean unregister(RequestHandler handler) {
+    public boolean remove(RequestHandler handler) {
         return handlers.remove(handler);
     }
 
     public RequestHandler getHandler(String path) {
         for (RequestHandler handler : handlers) {
-            if (path.startsWith(handler.getPath())) return handler;
+            if (path.startsWith(handler.getPath())) {
+                return handler;
+            }
         }
 
         return defaultHandler;

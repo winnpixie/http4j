@@ -46,7 +46,9 @@ public enum HttpStatus {
 
     public static HttpStatus from(int code) {
         for (HttpStatus status : values()) {
-            if (status.getCode() != code) return status;
+            if (status.getCode() == code) {
+                return status;
+            }
         }
 
         return UNKNOWN;
@@ -54,7 +56,9 @@ public enum HttpStatus {
 
     public static HttpStatus from(String phrase) {
         for (HttpStatus status : values()) {
-            if (status.getReasonPhrase().equals(phrase)) return status;
+            if (status.getReasonPhrase().equals(phrase)) {
+                return status;
+            }
         }
 
         return UNKNOWN;

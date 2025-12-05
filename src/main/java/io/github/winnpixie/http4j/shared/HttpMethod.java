@@ -11,7 +11,9 @@ public enum HttpMethod {
 
     public static HttpMethod from(String verb) {
         for (HttpMethod method : values()) {
-            if (method.name().equalsIgnoreCase(verb)) return method;
+            if (method.name().equalsIgnoreCase(verb)) {
+                return method;
+            }
         }
 
         return UNKNOWN;

@@ -50,8 +50,13 @@ public class Request {
 
     public String getQuery(String key, boolean caseSensitive) {
         for (Map.Entry<String, String> entry : getQueries().entrySet()) {
-            if (entry.getKey().equals(key)) return entry.getValue();
-            if (!caseSensitive && entry.getKey().equalsIgnoreCase(key)) return entry.getValue();
+            if (entry.getKey().equals(key)) {
+                return entry.getValue();
+            }
+
+            if (!caseSensitive && entry.getKey().equalsIgnoreCase(key)) {
+                return entry.getValue();
+            }
         }
 
         return "";
@@ -83,9 +88,9 @@ public class Request {
         if (exact) return headers.getOrDefault(name, "");
 
         for (Map.Entry<String, String> entry : headers.entrySet()) {
-            if (!entry.getKey().equalsIgnoreCase(name)) continue;
-
-            return entry.getValue();
+            if (entry.getKey().equalsIgnoreCase(name)) {
+                return entry.getValue();
+            }
         }
 
         return "";
@@ -96,76 +101,93 @@ public class Request {
     }
 
     public void read() throws IOException {
-        ByteBuffer bufferIn = ByteBuffer.allocate(65536);
-        // TODO: Use eventually?
-        int bytesRead = channel.read(bufferIn);
+        ByteBuffer bufferIn = ByteBuffer.allocate(65536); // 64K buffer allocation
+        int readLength = channel.read(bufferIn);
+        if (readLength < 1) {
+            throw new IOException("No input");
+        }
+
         bufferIn.flip();
 
-        if (!readHead(bufferIn)) throw new IOException("Malformed HTTP Head Line");
+        if (!readHead(bufferIn)) {
+            throw new IOException("Malformed HTTP Head Line");
+        }
+
         readHeaders(bufferIn);
         readContent(bufferIn);
     }
 
     private boolean readHead(ByteBuffer bufferIn) {
         String headLine = readLine(bufferIn);
-        if (headLine == null) return false;
-
-        String[] headTokens = headLine.split(" ");
-        if (headTokens.length < 3) return false;
-        this.method = HttpMethod.from(headTokens[0]);
-        this.path = headTokens[1];
-
-        int queryIdx = path.indexOf('?');
-        if (queryIdx > 0) { // Query can not be the first character in path.
-            this.query = path.substring(queryIdx + 1);
-            this.path = path.substring(0, queryIdx);
+        if (headLine == null) {
+            return false;
         }
 
+        String[] headTokens = headLine.split(" ");
+        if (headTokens.length < 3) {
+            return false;
+        }
+
+        this.method = HttpMethod.from(headTokens[0]);
+        this.path = headTokens[1];
         this.protocol = headTokens[2];
+
+        int queryTokenIndex = path.indexOf('?');
+        if (queryTokenIndex > 0) { // Query can not be the first character in path.
+            this.query = path.substring(queryTokenIndex + 1);
+            this.path = path.substring(0, queryTokenIndex);
+        }
+
         return true;
     }
 
     private void readHeaders(ByteBuffer bufferIn) {
         this.headers = new HashMap<>();
 
-        String headerLine;
-        while ((headerLine = readLine(bufferIn)) != null) {
-            String[] header = headerLine.split(":", 2);
-            if (header.length < 2) break;
+        String line;
+        while ((line = readLine(bufferIn)) != null) {
+            String[] header = line.split(":", 2);
+            if (header.length < 2) {
+                break;
+            }
 
             headers.put(header[0], header[1].indexOf(' ') == 0 ? header[1].substring(1) : header[1]);
         }
     }
 
+    // TODO: Look into a "proper" way of reading request content.
     private void readContent(ByteBuffer bufferIn) {
-        // TODO: Add properly? reading request body, this seems to work *for now*
-        String contentLengthHeader = getHeader("Content-Length", false);
-        if (contentLengthHeader.isEmpty()) return;
+        String contentLength = getHeader("Content-Length", false);
+        if (contentLength.isEmpty()) return;
 
-        int contentLength = Integer.parseInt(contentLengthHeader);
+        int expectedLength = Integer.parseInt(contentLength);
 
-        ByteBuffer buffer = ByteBuffer.allocate(contentLength);
-        int chr;
-        while (contentLength > 0 && (chr = readByte(bufferIn)) != -1) {
-            buffer.put((byte) chr);
-            contentLength--;
+        ByteBuffer contentBuffer = ByteBuffer.allocate(expectedLength);
+        byte b;
+        while (expectedLength > 0 && (b = readByte(bufferIn)) != -1) {
+            expectedLength--;
+            contentBuffer.put(b);
         }
 
-        this.body = buffer.array();
+        this.body = (byte[]) contentBuffer.flip().array();
     }
 
-    private String readLine(ByteBuffer buf) {
-        if (!buf.hasRemaining()) return null;
+    private String readLine(ByteBuffer bufferIn) {
+        if (!bufferIn.hasRemaining()) {
+            return null;
+        }
 
         StringBuilder builder = new StringBuilder();
 
-        int ch;
-        while ((ch = readByte(buf)) != -1) {
-            if (ch == '\n') {
-                if (builder.length() > 0 && builder.charAt(builder.length() - 1) == '\r') {
-                    builder.deleteCharAt(builder.length() - 1);
-                }
+        byte ch;
+        while ((ch = readByte(bufferIn)) != -1) {
+            boolean end = ch == '\r' || ch == '\n';
+            if (ch == '\r') {
+                ch = readByte(bufferIn); // consume next byte
+                end = ch == -1 || ch == '\n';
+            }
 
+            if (end) {
                 break;
             }
 
@@ -175,7 +197,7 @@ public class Request {
         return builder.toString();
     }
 
-    private int readByte(ByteBuffer buf) {
-        return buf.hasRemaining() ? buf.get() : -1;
+    private byte readByte(ByteBuffer bufferIn) {
+        return bufferIn.hasRemaining() ? bufferIn.get() : -1;
     }
 }

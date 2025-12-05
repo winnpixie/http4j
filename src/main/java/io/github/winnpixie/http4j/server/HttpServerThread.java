@@ -1,7 +1,7 @@
 package io.github.winnpixie.http4j.server;
 
-import io.github.winnpixie.http4j.server.endpoints.RequestHandler;
 import io.github.winnpixie.http4j.server.incoming.Request;
+import io.github.winnpixie.http4j.server.incoming.RequestHandler;
 import io.github.winnpixie.http4j.server.outgoing.Response;
 import io.github.winnpixie.http4j.shared.HttpMethod;
 import io.github.winnpixie.http4j.shared.HttpStatus;
@@ -32,9 +32,9 @@ public class HttpServerThread extends Thread {
             srvChannel.bind(new InetSocketAddress(server.getPort()));
             srvChannel.register(selector, SelectionKey.OP_ACCEPT);
 
-            InetSocketAddress addr = (InetSocketAddress) srvChannel.getLocalAddress();
+            InetSocketAddress address = (InetSocketAddress) srvChannel.getLocalAddress();
             server.getLogger().info(() -> String.format("http4j (server) started at %s:%d",
-                    addr.getHostName(), addr.getPort()));
+                    address.getHostName(), address.getPort()));
 
             while (server.isRunning()) {
                 selector.select();
@@ -59,6 +59,7 @@ public class HttpServerThread extends Thread {
 
     private void accept(ServerSocketChannel serverChannel, Selector selector) throws IOException {
         SocketChannel channel = serverChannel.accept();
+
         channel.configureBlocking(false);
         channel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
     }
@@ -99,13 +100,21 @@ public class HttpServerThread extends Thread {
     }
 
     private Response write(Request request) throws IOException {
-        Response response = new Response();
+        Response response = null;
 
         if (request.getHeader("Host", false).isEmpty()) {
-            response.setStatus(HttpStatus.BAD_REQUEST);
+            response = new Response.Builder()
+                    .setStatus(HttpStatus.BAD_REQUEST)
+                    .build();
         } else {
             RequestHandler handler = server.getRequestHandlers().getHandler(request.getPath());
-            if (handler != null) response = handler.process(request);
+            if (handler != null) {
+                response = handler.process(request);
+            }
+        }
+
+        if (response == null) {
+            response = new Response.Builder().build();
         }
 
         response.write(request.getChannel(), !request.getMethod().equals(HttpMethod.HEAD));

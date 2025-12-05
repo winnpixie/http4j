@@ -22,18 +22,13 @@ public class Request {
     private final byte[] body;
     private final boolean followRedirects;
 
-    private Request(HttpMethod method,
-                    URL url,
-                    Map<String, String> headers,
-                    Proxy proxy,
-                    byte[] body,
-                    boolean followRedirects) {
-        this.method = method;
-        this.url = url;
-        this.headers = headers;
-        this.proxy = proxy;
-        this.body = body;
-        this.followRedirects = followRedirects;
+    Request(Builder builder) {
+        this.method = builder.method;
+        this.url = builder.url;
+        this.headers = builder.headers;
+        this.proxy = builder.proxy;
+        this.body = builder.body;
+        this.followRedirects = builder.followRedirects;
     }
 
     public HttpMethod getMethod() {
@@ -78,8 +73,12 @@ public class Request {
             }
 
             try (InputStream is = conn.getInputStream()) {
-                return new Response(this, HttpStatus.from(conn.getResponseCode()),
-                        IOHelper.toByteArray(is), conn.getHeaderFields());
+                return new Response.Builder()
+                        .setRequest(this)
+                        .setStatus(HttpStatus.from(conn.getResponseCode()))
+                        .setHeaders(conn.getHeaderFields())
+                        .setBody(IOHelper.toByteArray(is))
+                        .build();
             }
         } finally {
             if (conn != null) conn.disconnect();
@@ -111,11 +110,13 @@ public class Request {
 
         public Builder setMethod(HttpMethod method) {
             this.method = method;
+
             return this;
         }
 
         public Builder setUrl(URL url) {
             this.url = url;
+
             return this;
         }
 
@@ -128,26 +129,34 @@ public class Request {
         }
 
         public Builder setHeaders(Map<String, String> headers) {
-            if (headers == null) headers = new HashMap<>();
+            if (headers == null) {
+                headers = new HashMap<>();
+            }
 
             this.headers = headers;
+
             return this;
         }
 
         public Builder setHeader(String key, String value) {
             headers.put(key, value);
+
             return this;
         }
 
         public Builder addHeaders(Map<String, String> headers) {
             this.headers.putAll(headers);
+
             return this;
         }
 
         public Builder setProxy(Proxy proxy) {
-            if (proxy == null) proxy = Proxy.NO_PROXY;
+            if (proxy == null) {
+                proxy = Proxy.NO_PROXY;
+            }
 
             this.proxy = proxy;
+
             return this;
         }
 
@@ -155,6 +164,7 @@ public class Request {
             if (body == null) body = new byte[0];
 
             this.body = body;
+
             return this;
         }
 
@@ -168,11 +178,12 @@ public class Request {
 
         public Builder setFollowRedirects(boolean followRedirects) {
             this.followRedirects = followRedirects;
+
             return this;
         }
 
         public Request create() {
-            return new Request(method, url, headers, proxy, body, followRedirects);
+            return new Request(this);
         }
     }
 }

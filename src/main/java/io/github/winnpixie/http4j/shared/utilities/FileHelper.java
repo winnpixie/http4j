@@ -24,19 +24,25 @@ public class FileHelper {
     }
 
     public static String getContentType(String fileName) {
-        String guess = URLConnection.guessContentTypeFromName(fileName);
-        if (guess != null) return guess;
+        String internalGuess = URLConnection.guessContentTypeFromName(fileName);
+        if (internalGuess != null) {
+            return internalGuess;
+        }
 
         int extIdx = fileName.lastIndexOf('.');
-        if (extIdx < 0 || extIdx + 1 == fileName.length()) return DEFAULT_CONTENT_TYPE;
+        if (extIdx < 0 || extIdx + 1 == fileName.length()) {
+            return DEFAULT_CONTENT_TYPE;
+        }
 
         return KNOWN_CONTENT_TYPES.getProperty(fileName.substring(extIdx + 1).toLowerCase(), DEFAULT_CONTENT_TYPE);
     }
 
     public static String getContentType(InputStream input) {
         try {
-            String guess = URLConnection.guessContentTypeFromStream(input);
-            if (guess != null) return guess;
+            String internalGuess = URLConnection.guessContentTypeFromStream(input);
+            if (internalGuess != null) {
+                return internalGuess;
+            }
         } catch (IOException ignored) {
             //  return the default type on exception.
         }
