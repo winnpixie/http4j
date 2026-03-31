@@ -1,7 +1,7 @@
 package io.github.winnpixie.http4j.server.incoming.impl;
 
+import io.github.winnpixie.http4j.server.incoming.PathHandler;
 import io.github.winnpixie.http4j.server.incoming.Request;
-import io.github.winnpixie.http4j.server.incoming.RequestHandler;
 import io.github.winnpixie.http4j.server.outgoing.Response;
 import io.github.winnpixie.http4j.shared.HttpStatus;
 import io.github.winnpixie.http4j.shared.utilities.FileHelper;
@@ -14,10 +14,10 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 
-public class FileRequestHandler extends RequestHandler {
+public class StaticPathHandler extends PathHandler {
     private Path root;
 
-    public FileRequestHandler() {
+    public StaticPathHandler() {
         super("/");
     }
 
@@ -41,7 +41,10 @@ public class FileRequestHandler extends RequestHandler {
         }
 
         // Attempt to locate an index.html file if requested resource is a directory.
-        if (isDir) path = path.resolve("index.html");
+        if (isDir) {
+            path = path.resolve("index.html");
+        }
+
         if (Files.notExists(path)) {
             return new Response.Builder()
                     .setStatus(HttpStatus.NOT_FOUND)
@@ -59,13 +62,15 @@ public class FileRequestHandler extends RequestHandler {
             long fileSize = channel.size();
 
             ByteBuffer fileBuffer = ByteBuffer.allocate((int) fileSize);
+
             channel.read(fileBuffer);
+            fileBuffer.flip();
 
             return new Response.Builder()
                     .setStatus(HttpStatus.OK)
                     .setHeader("Content-Type", FileHelper.getContentType(path.toString()))
                     .setHeader("Content-Length", Long.toString(fileSize))
-                    .setBody((byte[]) fileBuffer.flip().array())
+                    .setBody(fileBuffer.array())
                     .build();
         } catch (IOException ioe) {
             request.getServer().getLogger().log(Level.WARNING, "Error writing request", ioe);

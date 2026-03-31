@@ -4,10 +4,10 @@ import io.github.winnpixie.http4j.server.outgoing.Response;
 
 import java.io.IOException;
 
-public abstract class RequestHandler {
+public abstract class PathHandler {
     private final String path;
 
-    protected RequestHandler(String path) {
+    protected PathHandler(String path) {
         this.path = path;
     }
 

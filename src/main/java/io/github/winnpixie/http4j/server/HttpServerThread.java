@@ -1,7 +1,7 @@
 package io.github.winnpixie.http4j.server;
 
 import io.github.winnpixie.http4j.server.incoming.Request;
-import io.github.winnpixie.http4j.server.incoming.RequestHandler;
+import io.github.winnpixie.http4j.server.incoming.PathHandler;
 import io.github.winnpixie.http4j.server.outgoing.Response;
 import io.github.winnpixie.http4j.shared.HttpMethod;
 import io.github.winnpixie.http4j.shared.HttpStatus;
@@ -107,7 +107,7 @@ public class HttpServerThread extends Thread {
                     .setStatus(HttpStatus.BAD_REQUEST)
                     .build();
         } else {
-            RequestHandler handler = server.getRequestHandlers().getHandler(request.getPath());
+            PathHandler handler = server.getPathHandlers().getHandler(request.getPath());
             if (handler != null) {
                 response = handler.process(request);
             }

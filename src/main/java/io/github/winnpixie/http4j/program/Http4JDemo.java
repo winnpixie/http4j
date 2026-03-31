@@ -1,12 +1,10 @@
 package io.github.winnpixie.http4j.program;
 
 import io.github.winnpixie.http4j.client.HttpClient;
-import io.github.winnpixie.http4j.client.Request;
 import io.github.winnpixie.http4j.server.HttpServer;
-import io.github.winnpixie.http4j.shared.HttpMethod;
+import io.github.winnpixie.http4j.server.incoming.impl.StaticPathHandler;
 
 import java.net.MalformedURLException;
-import java.net.Proxy;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Level;
@@ -32,14 +30,17 @@ public class Http4JDemo {
                 case "--url":
                 case "-u":
                     url = value;
+                    i++;
                     break;
                 case "--port":
                 case "-p":
                     port = Integer.parseInt(value);
+                    i++;
                     break;
                 case "--root":
                 case "-r":
                     path = Paths.get(value);
+                    i++;
                     break;
                 default:
                     logger.log(Level.INFO, "http4j [key]... [value]...");
@@ -63,24 +64,24 @@ public class Http4JDemo {
     private static void runClient(String url) {
         try {
             HttpClient client = HttpClient.newClient();
-            Request request = client.newRequest().setUrl(url)
-                    .setMethod(HttpMethod.GET)
-                    .setProxy(Proxy.NO_PROXY)
-                    .create();
 
-            request.sendNonBlocking(
-                    resp -> logger.log(Level.INFO, () -> String.format("[client]%n%s", resp.getBodyAsString())),
-                    exc -> logger.log(Level.WARNING, exc, () -> "[client] Error processing request")
-            );
+            client.send(client.newRequest()
+                            .setUrl(url)
+                            .build(),
+                    response -> logger.log(Level.INFO, () -> String.format("[client]%n%s", response.getBodyAsString())),
+                    err -> logger.log(Level.WARNING, err, () -> "[client] Error processing request"));
         } catch (MalformedURLException mue) {
             logger.log(Level.WARNING, mue, () -> "[client] Malformed URL");
         }
     }
 
     private static void runServer(int port, Path root) {
-        HttpServer server = new HttpServer(port);
+        StaticPathHandler handler = new StaticPathHandler();
+        handler.setRoot(root);
 
-        server.getRequestHandlers().getDefaultHandler().setRoot(root);
+        HttpServer server = new HttpServer(port);
+        server.getPathHandlers().add(handler);
+
         server.start();
     }
 }

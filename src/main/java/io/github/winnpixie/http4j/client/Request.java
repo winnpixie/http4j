@@ -1,18 +1,15 @@
 package io.github.winnpixie.http4j.client;
 
 import io.github.winnpixie.http4j.shared.HttpMethod;
-import io.github.winnpixie.http4j.shared.HttpStatus;
-import io.github.winnpixie.http4j.shared.utilities.IOHelper;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.Proxy;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
 public class Request {
     private final HttpMethod method;
@@ -53,48 +50,6 @@ public class Request {
 
     public boolean isFollowRedirects() {
         return followRedirects;
-    }
-
-    public Response send() throws IOException {
-        HttpURLConnection conn = null;
-        try {
-            conn = (HttpURLConnection) url.openConnection(proxy);
-            conn.setRequestMethod(method.name());
-            conn.setInstanceFollowRedirects(followRedirects);
-            headers.forEach(conn::setRequestProperty);
-
-            if (method.equals(HttpMethod.PUT) || method.equals(HttpMethod.POST)) {
-                conn.setRequestProperty("Content-Length", Integer.toString(body.length));
-
-                try (OutputStream os = conn.getOutputStream()) {
-                    os.write(body);
-                    os.flush();
-                }
-            }
-
-            try (InputStream is = conn.getInputStream()) {
-                return new Response.Builder()
-                        .setRequest(this)
-                        .setStatus(HttpStatus.from(conn.getResponseCode()))
-                        .setHeaders(conn.getHeaderFields())
-                        .setBody(IOHelper.toByteArray(is))
-                        .build();
-            }
-        } finally {
-            if (conn != null) conn.disconnect();
-        }
-    }
-
-    // TODO: Create a proper executor service to submit these to.
-    public void sendNonBlocking(Consumer<Response> onSuccess, Consumer<Exception> onError) {
-        new Thread(() -> {
-            try {
-                Response response = send();
-                onSuccess.accept(response);
-            } catch (Exception exception) {
-                onError.accept(exception);
-            }
-        }, "http4j_client_request").start();
     }
 
     public static class Builder {
@@ -182,7 +137,7 @@ public class Request {
             return this;
         }
 
-        public Request create() {
+        public Request build() {
             return new Request(this);
         }
     }

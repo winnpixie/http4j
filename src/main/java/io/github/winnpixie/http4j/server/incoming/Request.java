@@ -85,7 +85,9 @@ public class Request {
     }
 
     public String getHeader(String name, boolean exact) {
-        if (exact) return headers.getOrDefault(name, "");
+        if (exact) {
+            return headers.getOrDefault(name, "");
+        }
 
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             if (entry.getKey().equalsIgnoreCase(name)) {
@@ -102,12 +104,13 @@ public class Request {
 
     public void read() throws IOException {
         ByteBuffer bufferIn = ByteBuffer.allocate(65536); // 64K buffer allocation
+
         int readLength = channel.read(bufferIn);
+        bufferIn.flip();
+
         if (readLength < 1) {
             throw new IOException("No input");
         }
-
-        bufferIn.flip();
 
         if (!readHead(bufferIn)) {
             throw new IOException("Malformed HTTP Head Line");
@@ -169,7 +172,8 @@ public class Request {
             contentBuffer.put(b);
         }
 
-        this.body = (byte[]) contentBuffer.flip().array();
+        contentBuffer.flip();
+        this.body = contentBuffer.array();
     }
 
     private String readLine(ByteBuffer bufferIn) {
