@@ -63,16 +63,24 @@ public class Http4JDemo {
 
     private static void runClient(String url) {
         try {
-            HttpClient client = HttpClient.newClient();
+            HttpClient client = HttpClient.newClient(); // OPTIONAL: user-defined thread-count limit for async operation
 
-            client.send(client.newRequest()
+            client.sendAsync(client.newRequest()
                             .setUrl(url)
-                            .build(),
-                    response -> logger.log(Level.INFO, () -> String.format("[client]%n%s", response.getBodyAsString())),
-                    err -> logger.log(Level.WARNING, err, () -> "[client] Error processing request"));
+                            .build())
+                    .whenComplete((response, throwable) -> {
+                        if (throwable != null) {
+                            logger.log(Level.WARNING, throwable, () -> "[client] Error processing request");
+                            return;
+                        }
+
+                        logger.log(Level.INFO, () -> String.format("[client]%n%s", response.getBodyAsString()));
+                    });
         } catch (MalformedURLException mue) {
             logger.log(Level.WARNING, mue, () -> "[client] Malformed URL");
         }
+
+        logger.log(Level.INFO, "[client] Client test ran");
     }
 
     private static void runServer(int port, Path root) {

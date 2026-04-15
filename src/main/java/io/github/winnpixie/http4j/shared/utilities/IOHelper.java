@@ -14,7 +14,7 @@ public class IOHelper {
     }
 
     public static <T extends OutputStream> T transfer(InputStream from, T to) throws IOException {
-        byte[] buffer = new byte[8192]; // 1K buffer
+        byte[] buffer = new byte[8192]; // 8K buffer
 
         int read;
         while ((read = from.read(buffer)) != -1) {

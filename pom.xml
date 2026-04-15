@@ -3,9 +3,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.github.foss4j</groupId>
+    <groupId>io.github.winnpixie</groupId>
     <artifactId>http4j</artifactId>
-    <version>0.8</version>
+    <version>0.9</version>
 
     <properties>
         <javac.version>1.8</javac.version>

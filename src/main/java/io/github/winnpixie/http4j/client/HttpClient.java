@@ -9,14 +9,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.util.function.Consumer;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class HttpClient {
-    private HttpClient() {
+    private final ExecutorService threadExecutor;
+
+    private HttpClient(int threadLimit) {
+        this.threadExecutor = Executors.newFixedThreadPool(threadLimit);
     }
 
     public static HttpClient newClient() {
-        return new HttpClient();
+        return newClient(8);
+    }
+
+    public static HttpClient newClient(int threadLimit) {
+        return new HttpClient(threadLimit);
     }
 
     public Request.Builder newRequest() {
@@ -58,14 +68,13 @@ public class HttpClient {
         }
     }
 
-    public void send(Request request, Consumer<Response> onSuccess, Consumer<Exception> onError) {
-        new Thread(() -> {
+    public CompletableFuture<Response> sendAsync(Request request) {
+        return CompletableFuture.supplyAsync(() -> {
             try {
-                Response response = send(request);
-                onSuccess.accept(response);
-            } catch (Exception exception) {
-                onError.accept(exception);
+                return send(request);
+            } catch (IOException exc) {
+                throw new CompletionException(exc);
             }
-        }, "http4j_client_send").start();
+        }, threadExecutor);
     }
 }
