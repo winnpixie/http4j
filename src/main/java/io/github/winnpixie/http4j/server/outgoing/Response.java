@@ -33,43 +33,43 @@ public class Response {
         return body;
     }
 
-    public void write(SocketChannel channel, boolean writeBody) throws IOException {
+    public void writeHead(SocketChannel channel) throws IOException {
+        // Construct Head
         StringBuilder head = new StringBuilder("HTTP/1.1 ")
                 .append(status.getCode()).append(' ')
                 .append(status.getReasonPhrase())
                 .append(Constants.END_OF_LINE);
 
-        headers.forEach((key, value) -> head.append(key)
-                .append(": ")
-                .append(value)
-                .append(Constants.END_OF_LINE));
+        // Apply Headers
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            head.append(entry.getKey())
+                    .append(": ")
+                    .append(entry.getValue())
+                    .append(Constants.END_OF_LINE);
+        }
         head.append(Constants.END_OF_LINE);
 
         channel.write(StandardCharsets.UTF_8.encode(head.toString()));
+    }
 
-        if (!writeBody) {
-            return;
-        }
+    public void writeBody(SocketChannel channel) throws IOException {
+        byte[] content = this.body;
 
-        if (body.length == 0 && status.getCode() / 100 != 2) {
-            channel.write(ByteBuffer.wrap(String.format("%d %s",
+        // Generate simple error text if content body is empty
+        if (content.length == 0 && status.getCode() / 100 != 2) {
+            content = String.format("%d - %s",
                             status.getCode(),
                             status.getReasonPhrase())
-                    .getBytes(StandardCharsets.UTF_8)));
-        } else {
-            channel.write(ByteBuffer.wrap(body));
+                    .getBytes(StandardCharsets.UTF_8);
         }
+
+        channel.write(ByteBuffer.wrap(content));
     }
 
     public static class Builder {
-        private HttpStatus status;
-        private Map<String, String> headers;
+        private HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        private Map<String, String> headers = new HashMap<>();
         private byte[] body;
-
-        public Builder() {
-            this.status = HttpStatus.INTERNAL_SERVER_ERROR;
-            this.headers = new HashMap<>();
-        }
 
         public Builder setStatus(HttpStatus status) {
             this.status = status;
@@ -107,11 +107,11 @@ public class Response {
         }
 
         public Builder setPermanentRedirect(String destination) {
-            return setRedirect(HttpStatus.MOVED_PERMANENTLY, destination);
+            return setRedirect(HttpStatus.PERMANENT_REDIRECT, destination);
         }
 
         public Builder setTemporaryRedirect(String destination) {
-            return setRedirect(HttpStatus.MOVED_TEMPORARILY, destination);
+            return setRedirect(HttpStatus.TEMPORARY_REDIRECT, destination);
         }
 
         public Response build() {
@@ -120,7 +120,6 @@ public class Response {
             }
 
             headers.put("Connection", "close");
-            headers.put("Server", Constants.SERVER_ID);
 
             if (body == null) {
                 this.body = new byte[0];

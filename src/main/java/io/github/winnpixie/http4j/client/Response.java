@@ -4,9 +4,11 @@ import io.github.winnpixie.http4j.shared.HttpStatus;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class Response {
     private final Request request;
@@ -33,8 +35,26 @@ public class Response {
         return headers;
     }
 
+    public List<String> getHeader(String key, boolean caseSensitive) {
+        if (caseSensitive) {
+            return headers.getOrDefault(key, Collections.emptyList());
+        }
+
+        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(key)) {
+                return entry.getValue();
+            }
+        }
+
+        return Collections.emptyList();
+    }
+
     public byte[] getBody() {
         return body;
+    }
+
+    public <T> T getBodyAs(Function<byte[], T> mutator) {
+        return mutator.apply(body);
     }
 
     public String getBodyAsString(Charset charset) {

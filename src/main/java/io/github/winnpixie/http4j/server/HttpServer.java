@@ -11,12 +11,19 @@ public class HttpServer {
     private final HttpServerThread serverThread;
 
     private int port;
+    private int connectionLimit;
+    private int contentLengthLimit = 1024 * 1024 * 1024; // 1G
     private boolean running;
 
-    public HttpServer(int port) {
+    public HttpServer(int port, int connectionLimit) {
         this.port = port;
+        this.connectionLimit = connectionLimit;
 
         this.serverThread = new HttpServerThread(this);
+    }
+
+    public HttpServer(int port) {
+        this(port, 64);
     }
 
     public Logger getLogger() {
@@ -29,10 +36,30 @@ public class HttpServer {
 
     public void setPort(int port) {
         if (running) {
-            throw new IllegalStateException("Cannot set port while running.");
+            throw new IllegalStateException("Cannot assign port while server is running");
         }
 
         this.port = port;
+    }
+
+    public int getConnectionLimit() {
+        return connectionLimit;
+    }
+
+    public void setConnectionLimit(int connectionLimit) {
+        if (running) {
+            throw new IllegalStateException("Cannot set connection limit while server is running");
+        }
+
+        this.connectionLimit = connectionLimit;
+    }
+
+    public int getContentLengthLimit() {
+        return contentLengthLimit;
+    }
+
+    public void setContentLengthLimit(int contentLengthLimit) {
+        this.contentLengthLimit = contentLengthLimit;
     }
 
     public boolean isRunning() {
@@ -44,8 +71,11 @@ public class HttpServer {
     }
 
     public void start() {
-        this.running = true;
+        if (running) {
+            throw new IllegalStateException("Cannot start server while it is already running");
+        }
 
+        this.running = true;
         serverThread.start();
     }
 
@@ -53,9 +83,9 @@ public class HttpServer {
         this.running = false;
 
         try {
-            serverThread.join();
+            serverThread.join(10000);
         } catch (InterruptedException ie) {
-            logger.log(Level.SEVERE, "Error waiting for thread to finish.", ie);
+            logger.log(Level.SEVERE, "Error waiting for thread to finish", ie);
 
             serverThread.interrupt();
         }

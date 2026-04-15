@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class FileHelper {
     public static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
@@ -15,36 +13,37 @@ public class FileHelper {
     static {
         try {
             KNOWN_CONTENT_TYPES.load(FileHelper.class.getResourceAsStream("/content-types.properties"));
-        } catch (IOException ioe) {
-            Logger.getGlobal().log(Level.WARNING, "Error retrieving built-in Content-Type map", ioe);
+        } catch (IOException ignored) {
+            // use default on unknown
         }
     }
 
     private FileHelper() {
     }
 
-    public static String getContentType(String fileName) {
-        String internalGuess = URLConnection.guessContentTypeFromName(fileName);
-        if (internalGuess != null) {
-            return internalGuess;
+    public static String getContentType(String path) {
+        String guess = URLConnection.guessContentTypeFromName(path);
+        if (guess != null) {
+            return guess;
         }
 
-        int extIdx = fileName.lastIndexOf('.');
-        if (extIdx < 0 || extIdx + 1 == fileName.length()) {
+        int extIdx = path.lastIndexOf('.');
+        if (extIdx < 0 || extIdx + 1 == path.length()) {
             return DEFAULT_CONTENT_TYPE;
         }
 
-        return KNOWN_CONTENT_TYPES.getProperty(fileName.substring(extIdx + 1).toLowerCase(), DEFAULT_CONTENT_TYPE);
+        String extension = path.substring(extIdx + 1).toLowerCase();
+        return KNOWN_CONTENT_TYPES.getProperty(extension, DEFAULT_CONTENT_TYPE);
     }
 
     public static String getContentType(InputStream input) {
         try {
-            String internalGuess = URLConnection.guessContentTypeFromStream(input);
-            if (internalGuess != null) {
-                return internalGuess;
+            String guess = URLConnection.guessContentTypeFromStream(input);
+            if (guess != null) {
+                return guess;
             }
         } catch (IOException ignored) {
-            //  return the default type on exception.
+            //  return default on throws
         }
 
         return DEFAULT_CONTENT_TYPE;

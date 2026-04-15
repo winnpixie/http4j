@@ -5,7 +5,7 @@
 
     <groupId>io.github.winnpixie</groupId>
     <artifactId>http4j</artifactId>
-    <version>0.9</version>
+    <version>0.9.1</version>
 
     <properties>
         <javac.version>1.8</javac.version>

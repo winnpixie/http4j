@@ -1,7 +1,7 @@
 package io.github.winnpixie.http4j.server;
 
-import io.github.winnpixie.http4j.server.incoming.Request;
 import io.github.winnpixie.http4j.server.incoming.PathHandler;
+import io.github.winnpixie.http4j.server.incoming.Request;
 import io.github.winnpixie.http4j.server.outgoing.Response;
 import io.github.winnpixie.http4j.shared.HttpMethod;
 import io.github.winnpixie.http4j.shared.HttpStatus;
@@ -29,7 +29,7 @@ public class HttpServerThread extends Thread {
         try (Selector selector = Selector.open();
              ServerSocketChannel srvChannel = ServerSocketChannel.open()) {
             srvChannel.configureBlocking(false);
-            srvChannel.bind(new InetSocketAddress(server.getPort()));
+            srvChannel.bind(new InetSocketAddress(server.getPort()), server.getConnectionLimit());
             srvChannel.register(selector, SelectionKey.OP_ACCEPT);
 
             InetSocketAddress address = (InetSocketAddress) srvChannel.getLocalAddress();
@@ -37,9 +37,12 @@ public class HttpServerThread extends Thread {
                     address.getHostName(), address.getPort()));
 
             while (server.isRunning()) {
-                selector.select();
-                Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
+                int queue = selector.selectNow();
+                if (queue < 1) {
+                    continue;
+                }
 
+                Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
                 while (keys.hasNext()) {
                     SelectionKey key = keys.next();
 
@@ -73,18 +76,18 @@ public class HttpServerThread extends Thread {
                 try {
                     return String.format("addr=%s/x-fwd=%s path='%s' status-code=%d user-agent='%s'",
                             ((InetSocketAddress) channel.getRemoteAddress()).getAddress().getHostAddress(),
-                            request.getHeader("X-Forwarded-For", false),
+                            request.getHeader("X-Forwarded-For", true),
                             request.getPath(),
                             response.getStatus().getCode(),
-                            request.getHeader("User-Agent", false));
+                            request.getHeader("User-Agent", true));
                 } catch (IOException ioe) {
                     server.getLogger().log(Level.WARNING, "Error retrieving client address", ioe);
 
                     return String.format("addr=err/x-fwd=%s path='%s' status-code=%d user-agent='%s'",
-                            request.getHeader("X-Forwarded-For", false),
+                            request.getHeader("X-Forwarded-For", true),
                             request.getPath(),
                             response.getStatus().getCode(),
-                            request.getHeader("User-Agent", false));
+                            request.getHeader("User-Agent", true));
                 }
             });
         } catch (IOException ioe) {
@@ -102,7 +105,7 @@ public class HttpServerThread extends Thread {
     private Response write(Request request) throws IOException {
         Response response = null;
 
-        if (request.getHeader("Host", false).isEmpty()) {
+        if (request.getHeader("Host", true).isEmpty()) {
             response = new Response.Builder()
                     .setStatus(HttpStatus.BAD_REQUEST)
                     .build();
@@ -117,7 +120,10 @@ public class HttpServerThread extends Thread {
             response = new Response.Builder().build();
         }
 
-        response.write(request.getChannel(), !request.getMethod().equals(HttpMethod.HEAD));
+        response.writeHead(request.getChannel());
+        if (request.getMethod() != HttpMethod.HEAD) {
+            response.writeBody(request.getChannel());
+        }
 
         return response;
     }

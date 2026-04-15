@@ -3,6 +3,7 @@ package io.github.winnpixie.http4j.server.incoming;
 
 import io.github.winnpixie.http4j.server.HttpServer;
 import io.github.winnpixie.http4j.shared.HttpMethod;
+import io.github.winnpixie.http4j.shared.utilities.IOHelper;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -18,10 +19,10 @@ public class Request {
     private String path = "";
     private String query = "";
     private String protocol = "";
-    private Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> headers = new HashMap<>();
     private byte[] body = new byte[0];
 
-    private Map<String, String> queryCache;
+    private Map<String, String> queryCache; // lazily loaded
 
     public Request(HttpServer server, SocketChannel channel) {
         this.server = server;
@@ -49,12 +50,12 @@ public class Request {
     }
 
     public String getQuery(String key, boolean caseSensitive) {
-        for (Map.Entry<String, String> entry : getQueries().entrySet()) {
-            if (entry.getKey().equals(key)) {
-                return entry.getValue();
-            }
+        if (caseSensitive) {
+            return getQueries().getOrDefault(key, "");
+        }
 
-            if (!caseSensitive && entry.getKey().equalsIgnoreCase(key)) {
+        for (Map.Entry<String, String> entry : getQueries().entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(key)) {
                 return entry.getValue();
             }
         }
@@ -69,6 +70,7 @@ public class Request {
 
             for (String entry : entries) {
                 String[] pair = entry.split("=", 2);
+
                 queryCache.put(pair[0], pair.length > 1 ? pair[1] : "");
             }
         }
@@ -84,13 +86,13 @@ public class Request {
         return headers;
     }
 
-    public String getHeader(String name, boolean exact) {
-        if (exact) {
-            return headers.getOrDefault(name, "");
+    public String getHeader(String key, boolean caseSensitive) {
+        if (caseSensitive) {
+            return headers.getOrDefault(key, "");
         }
 
         for (Map.Entry<String, String> entry : headers.entrySet()) {
-            if (entry.getKey().equalsIgnoreCase(name)) {
+            if (entry.getKey().equalsIgnoreCase(key)) {
                 return entry.getValue();
             }
         }
@@ -103,105 +105,92 @@ public class Request {
     }
 
     public void read() throws IOException {
-        ByteBuffer bufferIn = ByteBuffer.allocate(65536); // 64K buffer allocation
+        ByteBuffer buffer = ByteBuffer.allocate(1024); // 1K buffer
 
-        int readLength = channel.read(bufferIn);
-        bufferIn.flip();
-
-        if (readLength < 1) {
-            throw new IOException("No input");
+        int length = channel.read(buffer);
+        if (length < 1) {
+            throw new IOException("No data received");
         }
 
-        if (!readHead(bufferIn)) {
-            throw new IOException("Malformed HTTP Head Line");
-        }
+        buffer.flip();
 
-        readHeaders(bufferIn);
-        readContent(bufferIn);
+        readHead(buffer);
+        readHeaders(buffer);
+
+        // FIXME: Since the buffer is so small, the result may not represent the complete content
+        readContent(buffer);
     }
 
-    private boolean readHead(ByteBuffer bufferIn) {
-        String headLine = readLine(bufferIn);
-        if (headLine == null) {
-            return false;
+    private void readHead(ByteBuffer buffer) throws IOException {
+        String head = IOHelper.readLine(buffer);
+        if (head == null) {
+            throw new IOException("Missing HTTP Head");
         }
 
-        String[] headTokens = headLine.split(" ");
-        if (headTokens.length < 3) {
-            return false;
+        String[] tokens = head.split(" ");
+        if (tokens.length < 3) {
+            throw new IOException("Missing Tokens for HTTP Head");
         }
 
-        this.method = HttpMethod.from(headTokens[0]);
-        this.path = headTokens[1];
-        this.protocol = headTokens[2];
+        this.method = HttpMethod.from(tokens[0]);
+        this.path = tokens[1];
+        this.protocol = tokens[2];
 
-        int queryTokenIndex = path.indexOf('?');
-        if (queryTokenIndex > 0) { // Query can not be the first character in path.
-            this.query = path.substring(queryTokenIndex + 1);
-            this.path = path.substring(0, queryTokenIndex);
+        // Is this the proper way to handle the path+query portion of the URI?
+        int queryIdx = path.indexOf('?');
+        if (queryIdx > -1) {
+            this.query = path.substring(queryIdx + 1);
+            this.path = path.substring(0, queryIdx);
         }
-
-        return true;
     }
 
-    private void readHeaders(ByteBuffer bufferIn) {
-        this.headers = new HashMap<>();
-
+    private void readHeaders(ByteBuffer buffer) {
         String line;
-        while ((line = readLine(bufferIn)) != null) {
+        while ((line = IOHelper.readLine(buffer)) != null) {
             String[] header = line.split(":", 2);
             if (header.length < 2) {
                 break;
             }
 
-            headers.put(header[0], header[1].indexOf(' ') == 0 ? header[1].substring(1) : header[1]);
-        }
-    }
-
-    // TODO: Look into a "proper" way of reading request content.
-    private void readContent(ByteBuffer bufferIn) {
-        String contentLength = getHeader("Content-Length", false);
-        if (contentLength.isEmpty()) return;
-
-        int expectedLength = Integer.parseInt(contentLength);
-
-        ByteBuffer contentBuffer = ByteBuffer.allocate(expectedLength);
-        byte b;
-        while (expectedLength > 0 && (b = readByte(bufferIn)) != -1) {
-            expectedLength--;
-            contentBuffer.put(b);
-        }
-
-        contentBuffer.flip();
-        this.body = contentBuffer.array();
-    }
-
-    private String readLine(ByteBuffer bufferIn) {
-        if (!bufferIn.hasRemaining()) {
-            return null;
-        }
-
-        StringBuilder builder = new StringBuilder();
-
-        byte ch;
-        while ((ch = readByte(bufferIn)) != -1) {
-            boolean end = ch == '\r' || ch == '\n';
-            if (ch == '\r') {
-                ch = readByte(bufferIn); // consume next byte
-                end = ch == -1 || ch == '\n';
+            String key = header[0];
+            String value = header[1];
+            if (value.indexOf(' ') == 0) {
+                value = value.substring(1);
             }
 
-            if (end) {
-                break;
-            }
-
-            builder.append((char) ch);
+            headers.put(key, value);
         }
-
-        return builder.toString();
     }
 
-    private byte readByte(ByteBuffer bufferIn) {
-        return bufferIn.hasRemaining() ? bufferIn.get() : -1;
+    private void readContent(ByteBuffer buffer) throws IOException {
+        String contentLengthString = getHeader("Content-Length", true);
+        if (contentLengthString.isEmpty()) {
+            return;
+        }
+
+        int contentLength;
+        try {
+            contentLength = Integer.parseInt(contentLengthString);
+        } catch (NumberFormatException nfe) {
+            throw new IOException("Content-Length is not a number", nfe);
+        }
+
+        if (contentLength < 0) {
+            throw new IOException("Content-Length cannot be negative");
+        }
+
+        if (contentLength > server.getContentLengthLimit()) {
+            throw new IOException("Content-Length exceeds limit");
+        }
+
+        // TODO: Can we avoid array copy altogether, without over-sizing?
+        byte[] content = new byte[contentLength];
+        int read = 0;
+        while (read < contentLength && buffer.hasRemaining()) {
+            content[read++] = buffer.get();
+        }
+
+        this.body = new byte[read];
+        System.arraycopy(content, 0, body, 0, read);
     }
 }

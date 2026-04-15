@@ -21,8 +21,16 @@ public class Http4JDemo {
         Path path = Paths.get(".");
 
         // # ARG PROCESSING
+        boolean skip = false;
         for (int i = 0; i < args.length; i++) {
-            if (i + 1 == args.length) break;
+            if (i + 1 == args.length) {
+                break;
+            }
+
+            if (skip) {
+                skip = false;
+                continue;
+            }
 
             String key = args[i];
             String value = args[i + 1];
@@ -30,17 +38,17 @@ public class Http4JDemo {
                 case "--url":
                 case "-u":
                     url = value;
-                    i++;
+                    skip = true;
                     break;
                 case "--port":
                 case "-p":
                     port = Integer.parseInt(value);
-                    i++;
+                    skip = true;
                     break;
                 case "--root":
                 case "-r":
                     path = Paths.get(value);
-                    i++;
+                    skip = true;
                     break;
                 default:
                     logger.log(Level.INFO, "http4j [key]... [value]...");
@@ -63,7 +71,7 @@ public class Http4JDemo {
 
     private static void runClient(String url) {
         try {
-            HttpClient client = HttpClient.newClient(); // OPTIONAL: user-defined thread-count limit for async operation
+            HttpClient client = HttpClient.newClient(); // OPTIONAL: user-defined limit for async thread count
 
             client.sendAsync(client.newRequest()
                             .setUrl(url)
@@ -79,15 +87,13 @@ public class Http4JDemo {
         } catch (MalformedURLException mue) {
             logger.log(Level.WARNING, mue, () -> "[client] Malformed URL");
         }
-
-        logger.log(Level.INFO, "[client] Client test ran");
     }
 
     private static void runServer(int port, Path root) {
         StaticPathHandler handler = new StaticPathHandler();
         handler.setRoot(root);
 
-        HttpServer server = new HttpServer(port);
+        HttpServer server = new HttpServer(port); // OPTIONAL: user-defined limit for socket back-log amount
         server.getPathHandlers().add(handler);
 
         server.start();

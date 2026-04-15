@@ -9,24 +9,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class HttpClient {
-    private final ExecutorService threadExecutor;
+    private final ExecutorService threadedExecutor;
 
-    private HttpClient(int threadLimit) {
-        this.threadExecutor = Executors.newFixedThreadPool(threadLimit);
+    private HttpClient(int threads) {
+        this.threadedExecutor = Executors.newFixedThreadPool(threads);
     }
 
     public static HttpClient newClient() {
         return newClient(8);
     }
 
-    public static HttpClient newClient(int threadLimit) {
-        return new HttpClient(threadLimit);
+    public static HttpClient newClient(int threads) {
+        return new HttpClient(threads);
     }
 
     public Request.Builder newRequest() {
@@ -38,11 +39,13 @@ public class HttpClient {
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) request.getUrl().openConnection(request.getProxy());
-            connection.setRequestMethod(request.getMethod().name());
+            connection.setRequestMethod(request.getMethod().getVerb());
             connection.setUseCaches(false);
             connection.setInstanceFollowRedirects(request.isFollowRedirects());
 
-            request.getHeaders().forEach(connection::setRequestProperty);
+            for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
+                connection.setRequestProperty(entry.getKey(), entry.getValue());
+            }
 
             if (request.getMethod().equals(HttpMethod.PUT) || request.getMethod().equals(HttpMethod.POST)) {
                 connection.setRequestProperty("Content-Length", Integer.toString(request.getBody().length));
@@ -75,6 +78,6 @@ public class HttpClient {
             } catch (IOException exc) {
                 throw new CompletionException(exc);
             }
-        }, threadExecutor);
+        }, threadedExecutor);
     }
 }
