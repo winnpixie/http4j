@@ -1,6 +1,7 @@
 package io.github.winnpixie.http4j.client;
 
 import io.github.winnpixie.http4j.shared.HttpMethod;
+import io.github.winnpixie.http4j.shared.throwables.HttpException;
 
 import java.net.MalformedURLException;
 import java.net.Proxy;
@@ -11,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Request {
+public class HttpRequest {
     private final HttpMethod method;
     private final URL url;
     private final Map<String, String> headers;
@@ -19,7 +20,7 @@ public class Request {
     private final byte[] body;
     private final boolean followRedirects;
 
-    Request(Builder builder) {
+    HttpRequest(Builder builder) {
         this.method = builder.method;
         this.url = builder.url;
         this.headers = builder.headers;
@@ -75,11 +76,15 @@ public class Request {
             return this;
         }
 
-        public Builder setUrl(URI uri) throws MalformedURLException {
-            return setUrl(uri.toURL());
+        public Builder setUrl(URI uri) throws HttpException {
+            try {
+                return setUrl(uri.toURL());
+            } catch (MalformedURLException mue) {
+                throw new HttpException("Invalid URI", mue);
+            }
         }
 
-        public Builder setUrl(String url) throws MalformedURLException {
+        public Builder setUrl(String url) throws HttpException {
             return setUrl(URI.create(url));
         }
 
@@ -137,8 +142,8 @@ public class Request {
             return this;
         }
 
-        public Request build() {
-            return new Request(this);
+        public HttpRequest build() {
+            return new HttpRequest(this);
         }
     }
 }

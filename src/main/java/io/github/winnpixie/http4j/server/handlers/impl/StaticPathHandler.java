@@ -1,9 +1,10 @@
-package io.github.winnpixie.http4j.server.incoming.impl;
+package io.github.winnpixie.http4j.server.handlers.impl;
 
-import io.github.winnpixie.http4j.server.incoming.PathHandler;
-import io.github.winnpixie.http4j.server.incoming.Request;
-import io.github.winnpixie.http4j.server.outgoing.Response;
+import io.github.winnpixie.http4j.server.handlers.PathHandler;
+import io.github.winnpixie.http4j.server.incoming.HttpRequest;
+import io.github.winnpixie.http4j.server.outgoing.HttpResponse;
 import io.github.winnpixie.http4j.shared.HttpStatus;
+import io.github.winnpixie.http4j.shared.throwables.HttpException;
 import io.github.winnpixie.http4j.shared.utilities.FileHelper;
 
 import java.io.IOException;
@@ -38,7 +39,7 @@ public class StaticPathHandler extends PathHandler {
     }
 
     @Override
-    public Response process(Request request) {
+    public HttpResponse process(HttpRequest request) throws HttpException {
         String pathString = request.getPath().substring(1);
         Path path = root.resolve(pathString);
 
@@ -48,7 +49,7 @@ public class StaticPathHandler extends PathHandler {
         }
 
         if (Files.notExists(path)) {
-            return new Response.Builder()
+            return new HttpResponse.Builder()
                     .setStatus(HttpStatus.NOT_FOUND)
                     .build();
         }
@@ -67,11 +68,9 @@ public class StaticPathHandler extends PathHandler {
             int fileSize = (int) channel.size();
 
             ByteBuffer fileBuffer = ByteBuffer.allocate(fileSize);
-
             channel.read(fileBuffer);
-            fileBuffer.flip();
 
-            return new Response.Builder()
+            return new HttpResponse.Builder()
                     .setStatus(HttpStatus.OK)
                     .setHeader("Content-Type", FileHelper.getContentType(path.toString()))
                     .setHeader("Content-Length", Integer.toString(fileSize))

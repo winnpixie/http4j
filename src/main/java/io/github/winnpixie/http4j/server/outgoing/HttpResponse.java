@@ -1,21 +1,16 @@
 package io.github.winnpixie.http4j.server.outgoing;
 
 import io.github.winnpixie.http4j.shared.HttpStatus;
-import io.github.winnpixie.http4j.shared.utilities.Constants;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Response {
+public class HttpResponse {
     private final HttpStatus status;
     private final Map<String, String> headers;
     private final byte[] body;
 
-    Response(Builder builder) {
+    private HttpResponse(Builder builder) {
         this.status = builder.status;
         this.headers = builder.headers;
         this.body = builder.body;
@@ -33,41 +28,8 @@ public class Response {
         return body;
     }
 
-    public void writeHead(SocketChannel channel) throws IOException {
-        // Construct Head
-        StringBuilder head = new StringBuilder("HTTP/1.1 ")
-                .append(status.getCode()).append(' ')
-                .append(status.getReasonPhrase())
-                .append(Constants.END_OF_LINE);
-
-        // Apply Headers
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            head.append(entry.getKey())
-                    .append(": ")
-                    .append(entry.getValue())
-                    .append(Constants.END_OF_LINE);
-        }
-        head.append(Constants.END_OF_LINE);
-
-        channel.write(StandardCharsets.UTF_8.encode(head.toString()));
-    }
-
-    public void writeBody(SocketChannel channel) throws IOException {
-        byte[] content = this.body;
-
-        // Generate simple error text if content body is empty
-        if (content.length == 0 && status.getCode() / 100 != 2) {
-            content = String.format("%d - %s",
-                            status.getCode(),
-                            status.getReasonPhrase())
-                    .getBytes(StandardCharsets.UTF_8);
-        }
-
-        channel.write(ByteBuffer.wrap(content));
-    }
-
     public static class Builder {
-        private HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        private HttpStatus status;
         private Map<String, String> headers = new HashMap<>();
         private byte[] body;
 
@@ -114,7 +76,7 @@ public class Response {
             return setRedirect(HttpStatus.TEMPORARY_REDIRECT, destination);
         }
 
-        public Response build() {
+        public HttpResponse build() {
             if (status == null) {
                 status = HttpStatus.INTERNAL_SERVER_ERROR;
             }
@@ -125,7 +87,7 @@ public class Response {
                 this.body = new byte[0];
             }
 
-            return new Response(this);
+            return new HttpResponse(this);
         }
     }
 }

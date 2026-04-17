@@ -10,20 +10,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public class Response {
-    private final Request request;
+public class HttpResponse {
+    private final HttpRequest request;
     private final HttpStatus status;
     private final Map<String, List<String>> headers;
     private final byte[] body;
 
-    Response(Builder builder) {
+    HttpResponse(Builder builder) {
         this.request = builder.request;
         this.status = builder.status;
         this.headers = builder.headers;
         this.body = builder.body;
     }
 
-    public Request getRequest() {
+    public HttpRequest getRequest() {
         return request;
     }
 
@@ -66,12 +66,12 @@ public class Response {
     }
 
     static class Builder {
-        private Request request;
+        private HttpRequest request;
         private HttpStatus status;
         private Map<String, List<String>> headers;
         private byte[] body;
 
-        Builder setRequest(Request request) {
+        Builder setRequest(HttpRequest request) {
             this.request = request;
 
             return this;
@@ -92,7 +92,7 @@ public class Response {
             return this;
         }
 
-        Response build() {
+        HttpResponse build() {
             if (status == null) {
                 this.status = HttpStatus.INTERNAL_SERVER_ERROR;
             }
@@ -105,7 +105,7 @@ public class Response {
                 this.body = new byte[0];
             }
 
-            return new Response(this);
+            return new HttpResponse(this);
         }
     }
 }

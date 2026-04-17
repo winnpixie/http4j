@@ -2,6 +2,7 @@ package io.github.winnpixie.http4j.client;
 
 import io.github.winnpixie.http4j.shared.HttpMethod;
 import io.github.winnpixie.http4j.shared.HttpStatus;
+import io.github.winnpixie.http4j.shared.throwables.HttpException;
 import io.github.winnpixie.http4j.shared.utilities.Constants;
 import io.github.winnpixie.http4j.shared.utilities.IOHelper;
 
@@ -30,12 +31,12 @@ public class HttpClient {
         return new HttpClient(threads);
     }
 
-    public Request.Builder newRequest() {
-        return new Request.Builder()
+    public HttpRequest.Builder newRequest() {
+        return new HttpRequest.Builder()
                 .setHeader("User-Agent", Constants.CLIENT_ID);
     }
 
-    public Response send(Request request) throws IOException {
+    public HttpResponse send(HttpRequest request) throws HttpException {
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) request.getUrl().openConnection(request.getProxy());
@@ -57,13 +58,15 @@ public class HttpClient {
             }
 
             try (InputStream is = connection.getInputStream()) {
-                return new Response.Builder()
+                return new HttpResponse.Builder()
                         .setRequest(request)
                         .setStatus(HttpStatus.from(connection.getResponseCode()))
                         .setHeaders(connection.getHeaderFields())
                         .setBody(IOHelper.toByteArray(is))
                         .build();
             }
+        } catch (IOException ioe) {
+            throw new HttpException("Error with request", ioe);
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -71,12 +74,12 @@ public class HttpClient {
         }
     }
 
-    public CompletableFuture<Response> sendAsync(Request request) {
+    public CompletableFuture<HttpResponse> sendAsync(HttpRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return send(request);
-            } catch (IOException exc) {
-                throw new CompletionException(exc);
+            } catch (HttpException he) {
+                throw new CompletionException(he);
             }
         }, threadedExecutor);
     }

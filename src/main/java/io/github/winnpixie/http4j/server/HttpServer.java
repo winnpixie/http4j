@@ -1,6 +1,6 @@
 package io.github.winnpixie.http4j.server;
 
-import io.github.winnpixie.http4j.server.incoming.PathHandlers;
+import io.github.winnpixie.http4j.server.handlers.PathHandlers;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -8,18 +8,17 @@ import java.util.logging.Logger;
 public class HttpServer {
     private final Logger logger = Logger.getLogger(HttpServer.class.getName());
     private final PathHandlers pathHandlers = new PathHandlers();
-    private final HttpServerThread serverThread;
 
     private int port;
     private int connectionLimit;
     private int contentLengthLimit = 1024 * 1024 * 1024; // 1G
+
     private boolean running;
+    private HttpServerThread serverThread;
 
     public HttpServer(int port, int connectionLimit) {
         this.port = port;
         this.connectionLimit = connectionLimit;
-
-        this.serverThread = new HttpServerThread(this);
     }
 
     public HttpServer(int port) {
@@ -76,6 +75,7 @@ public class HttpServer {
         }
 
         this.running = true;
+        this.serverThread = new HttpServerThread(this);
         serverThread.start();
     }
 

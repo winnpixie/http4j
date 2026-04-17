@@ -2,9 +2,9 @@ package io.github.winnpixie.http4j.program;
 
 import io.github.winnpixie.http4j.client.HttpClient;
 import io.github.winnpixie.http4j.server.HttpServer;
-import io.github.winnpixie.http4j.server.incoming.impl.StaticPathHandler;
+import io.github.winnpixie.http4j.server.handlers.impl.StaticPathHandler;
+import io.github.winnpixie.http4j.shared.throwables.HttpException;
 
-import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Level;
@@ -84,8 +84,8 @@ public class Http4JDemo {
 
                         logger.log(Level.INFO, () -> String.format("[client]%n%s", response.getBodyAsString()));
                     });
-        } catch (MalformedURLException mue) {
-            logger.log(Level.WARNING, mue, () -> "[client] Malformed URL");
+        } catch (HttpException he) {
+            logger.log(Level.WARNING, he, () -> "[client] Error constructing request");
         }
     }
 

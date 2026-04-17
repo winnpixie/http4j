@@ -1,4 +1,4 @@
-package io.github.winnpixie.http4j.server.incoming;
+package io.github.winnpixie.http4j.server.handlers;
 
 import java.util.ArrayList;
 import java.util.List;

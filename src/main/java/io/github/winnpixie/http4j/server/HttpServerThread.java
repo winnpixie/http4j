@@ -1,10 +1,13 @@
 package io.github.winnpixie.http4j.server;
 
-import io.github.winnpixie.http4j.server.incoming.PathHandler;
-import io.github.winnpixie.http4j.server.incoming.Request;
-import io.github.winnpixie.http4j.server.outgoing.Response;
+import io.github.winnpixie.http4j.server.handlers.PathHandler;
+import io.github.winnpixie.http4j.server.incoming.HttpRequest;
+import io.github.winnpixie.http4j.server.incoming.HttpRequestProvider;
+import io.github.winnpixie.http4j.server.outgoing.HttpResponse;
+import io.github.winnpixie.http4j.server.outgoing.HttpResponseWriter;
 import io.github.winnpixie.http4j.shared.HttpMethod;
 import io.github.winnpixie.http4j.shared.HttpStatus;
+import io.github.winnpixie.http4j.shared.throwables.HttpException;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -69,8 +72,8 @@ public class HttpServerThread extends Thread {
 
     private void processClient(SelectionKey key) {
         try (SocketChannel channel = (SocketChannel) key.channel()) {
-            Request request = read(channel);
-            Response response = write(request);
+            HttpRequest request = read(channel);
+            HttpResponse response = write(request);
 
             server.getLogger().info(() -> {
                 try {
@@ -90,23 +93,20 @@ public class HttpServerThread extends Thread {
                             request.getHeader("User-Agent", true));
                 }
             });
-        } catch (IOException ioe) {
-            server.getLogger().log(Level.WARNING, "Error processing client", ioe);
+        } catch (IOException | HttpException exc) {
+            server.getLogger().log(Level.WARNING, "Error processing request", exc);
         }
     }
 
-    private Request read(SocketChannel channel) throws IOException {
-        Request request = new Request(server, channel);
-        request.read();
-
-        return request;
+    private HttpRequest read(SocketChannel channel) throws HttpException {
+        return HttpRequestProvider.create(server, channel);
     }
 
-    private Response write(Request request) throws IOException {
-        Response response = null;
+    private HttpResponse write(HttpRequest request) throws HttpException {
+        HttpResponse response = null;
 
         if (request.getHeader("Host", true).isEmpty()) {
-            response = new Response.Builder()
+            response = new HttpResponse.Builder()
                     .setStatus(HttpStatus.BAD_REQUEST)
                     .build();
         } else {
@@ -117,12 +117,12 @@ public class HttpServerThread extends Thread {
         }
 
         if (response == null) {
-            response = new Response.Builder().build();
+            response = new HttpResponse.Builder().build();
         }
 
-        response.writeHead(request.getChannel());
+        HttpResponseWriter.writeHead(response, request.getChannel());
         if (request.getMethod() != HttpMethod.HEAD) {
-            response.writeBody(request.getChannel());
+            HttpResponseWriter.writeBody(response, request.getChannel());
         }
 
         return response;
