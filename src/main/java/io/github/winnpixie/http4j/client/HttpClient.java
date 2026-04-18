@@ -51,6 +51,7 @@ public class HttpClient {
             if (request.getMethod().equals(HttpMethod.PUT) || request.getMethod().equals(HttpMethod.POST)) {
                 connection.setRequestProperty("Content-Length", Integer.toString(request.getBody().length));
 
+                connection.setDoOutput(true);
                 try (OutputStream os = connection.getOutputStream()) {
                     os.write(request.getBody());
                     os.flush();
