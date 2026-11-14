@@ -11,7 +11,9 @@ public class HttpServer {
 
     private int port;
     private int connectionLimit;
-    private int contentLengthLimit = 1024 * 1024 * 1024; // 1G
+
+    private int bufferSize = 1024 * 64; // 64KB
+    private int contentLengthLimit = 1024 * 1024 * 1024; // 1GB
 
     private boolean running;
     private HttpServerThread serverThread;
@@ -51,6 +53,14 @@ public class HttpServer {
         }
 
         this.connectionLimit = connectionLimit;
+    }
+
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    public void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
     }
 
     public int getContentLengthLimit() {

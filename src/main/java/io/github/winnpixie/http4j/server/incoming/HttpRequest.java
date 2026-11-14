@@ -20,7 +20,7 @@ public class HttpRequest {
     private final Map<String, String> headers;
     private final byte[] body;
 
-    private Map<String, String> queryCache; // lazily loaded
+    private Map<String, String> queries; // lazily loaded
 
     private HttpRequest(Builder builder) {
         this.server = builder.server;
@@ -73,18 +73,18 @@ public class HttpRequest {
     }
 
     public Map<String, String> getQueries() {
-        if (queryCache == null) {
-            queryCache = new HashMap<>();
+        if (queries == null) {
+            this.queries = new HashMap<>();
             String[] entries = this.query.split("&");
 
             for (String entry : entries) {
                 String[] pair = entry.split("=", 2);
 
-                queryCache.put(pair[0], pair.length > 1 ? pair[1] : "");
+                queries.put(pair[0], pair.length > 1 ? pair[1] : "");
             }
         }
 
-        return queryCache;
+        return queries;
     }
 
     public Map<String, String> getHeaders() {

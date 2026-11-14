@@ -68,7 +68,10 @@ public class StaticPathHandler extends PathHandler {
             int fileSize = (int) channel.size();
 
             ByteBuffer fileBuffer = ByteBuffer.allocate(fileSize);
-            channel.read(fileBuffer);
+            int len;
+            do {
+                len = channel.read(fileBuffer);
+            } while (len > 0);
 
             return new HttpResponse.Builder()
                     .setStatus(HttpStatus.OK)
@@ -85,7 +88,6 @@ public class StaticPathHandler extends PathHandler {
 
     private boolean isInsideRoot(Path path) {
         try {
-            // TODO: Could/Should this resolution and/or result be cached?
             return path.toRealPath(LinkOption.NOFOLLOW_LINKS)
                     .startsWith(root);
         } catch (IOException ioe) {

@@ -17,7 +17,7 @@ public class HttpRequestProvider {
     }
 
     public static HttpRequest create(HttpServer server, SocketChannel channel) throws HttpException {
-        ByteBuffer buffer = ByteBuffer.allocate(8192); // 8K buffer
+        ByteBuffer buffer = ByteBuffer.allocate(server.getBufferSize());
         int len;
 
         try {
@@ -48,7 +48,6 @@ public class HttpRequestProvider {
         return builder.build();
     }
 
-
     private static void readHead(HttpRequest.Builder builder, ByteBuffer buffer) throws HttpException {
         String head = IOHelper.readLine(buffer);
         if (head == null) {
@@ -74,7 +73,7 @@ public class HttpRequestProvider {
         }
     }
 
-    // FIXME: This needs to be implemented better
+    // FIXME: If the header section is too large, the read buffer will exhaust prematurely
     private static Map<String, String> readHeaders(HttpRequest.Builder builder, ByteBuffer buffer) {
         Map<String, String> headers = new HashMap<>();
         builder.setHeaders(headers);
@@ -113,7 +112,12 @@ public class HttpRequestProvider {
 
         while (remaining > 0) {
             try {
-                remaining -= channel.read(contentBuffer);
+                int len = channel.read(contentBuffer);
+                if (len < 1) {
+                    break;
+                }
+
+                remaining -= len;
             } catch (IOException ioe) {
                 throw new HttpException("Error content body", ioe);
             }
@@ -123,14 +127,14 @@ public class HttpRequestProvider {
     }
 
     private static int getContentLength(Map<String, String> headers, HttpServer server) throws HttpException {
-        String contentLengthString = headers.getOrDefault("Content-Length", "");
-        if (contentLengthString.isEmpty()) {
+        String contentLengthRaw = headers.getOrDefault("Content-Length", "");
+        if (contentLengthRaw.isEmpty()) {
             return 0;
         }
 
         int contentLength;
         try {
-            contentLength = Integer.parseInt(contentLengthString);
+            contentLength = Integer.parseInt(contentLengthRaw);
         } catch (NumberFormatException nfe) {
             throw new HttpException("Content-Length is not a number", nfe);
         }

@@ -48,7 +48,10 @@ public class HttpResponseWriter {
         }
 
         try {
-            channel.write(ByteBuffer.wrap(content));
+            ByteBuffer buf = ByteBuffer.wrap(content);
+            while (buf.hasRemaining()) {
+                channel.write(buf);
+            }
         } catch (IOException ioe) {
             throw new HttpException("Error writing content body", ioe);
         }

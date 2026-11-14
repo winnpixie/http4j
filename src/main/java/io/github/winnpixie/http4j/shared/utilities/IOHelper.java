@@ -16,7 +16,7 @@ public class IOHelper {
     }
 
     public static <T extends OutputStream> T transfer(InputStream src, T dst) throws IOException {
-        byte[] buffer = new byte[1024]; // 1K buffer
+        byte[] buffer = new byte[8192]; // 8K buffer
 
         int len;
         while ((len = src.read(buffer)) != -1) {
@@ -28,12 +28,8 @@ public class IOHelper {
 
     /* NIO */
     public static byte[] toByteArray(ByteBuffer src) {
-        int size = src.remaining();
-        byte[] dst = new byte[size];
-
-        for (int i = 0; i < size; i++) {
-            dst[i] = src.get();
-        }
+        byte[] dst = new byte[src.remaining()];
+        src.get(dst);
 
         return dst;
     }

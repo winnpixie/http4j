@@ -1,6 +1,7 @@
 package io.github.winnpixie.http4j.server.outgoing;
 
 import io.github.winnpixie.http4j.shared.HttpStatus;
+import io.github.winnpixie.http4j.shared.utilities.Constants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -81,6 +82,7 @@ public class HttpResponse {
                 status = HttpStatus.INTERNAL_SERVER_ERROR;
             }
 
+            headers.put("Server", Constants.SERVER_ID);
             headers.put("Connection", "close");
 
             if (body == null) {
